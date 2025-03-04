@@ -1,6 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    age = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
+
 class Category(models.Model):
     name = models.CharField(max_length=100)
     type = models.CharField(max_length=10, choices=[('gasto', 'Gasto'), ('ingreso', 'Ingreso')])
@@ -46,3 +53,41 @@ class Resource(models.Model):
 
     def __str__(self):
         return self.title
+    
+class TransactionHistory(models.Model):
+    TRANSACTION_TYPES = [
+        ('create', 'Creación'),
+        ('update', 'Actualización'),
+        ('delete', 'Eliminación'),
+    ]
+    transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPES)
+    transaction_date = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    details = models.TextField()  # Detalles del cambio
+
+    def __str__(self):
+        return f"{self.transaction_type} - {self.transaction_date}"
+    
+class IncomeSource(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+    
+class BasicExpense(models.Model):
+    name = models.CharField(max_length=100)
+    
+    def __str__(self):
+        return self.name
+    
+class WishExpense(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+class SavingsInvestment(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name

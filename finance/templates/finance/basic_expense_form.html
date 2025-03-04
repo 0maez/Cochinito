@@ -1,12 +1,12 @@
 {% extends "finance/base.html" %}
 {% block content %}
 <div class="container">
-    <h2>Registro de Usuario</h2>
+    <h2>Gastos Básicos</h2>
+    <p>Selecciona tus gastos básicos (puedes elegir más de una):</p>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
+        {{ form.basic_expenses }}
         <button type="submit" class="btn btn-primary">Siguiente</button>
     </form>
 </div>
 {% endblock %}
-
