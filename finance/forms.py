@@ -12,16 +12,17 @@ class RegisterForm(UserCreationForm):
     class Meta:
         model = User
         fields = ["username", "first_name", "last_name", "age", "email", "password1", "password2"]
-        
-        def save(self, commit=True):
-            user = super().save(commit=False)
-            user.first_name = self.cleaned_data["first_name"]
-            user.last_name = self.cleaned_data["last_name"]
-            user.email = self.cleaned_data["email"]
-            if commit:
-                user.save()
-                Profile.objects.create(user=user, age=self.cleaned_data["age"])
-            return user
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.first_name = self.cleaned_data["first_name"]
+        user.last_name = self.cleaned_data["last_name"]
+        user.email = self.cleaned_data["email"]
+        if commit:
+            user.save()
+            Profile.objects.create(user=user, age=self.cleaned_data["age"])
+        return user
+
 
 class IncomeForm(forms.Form):
     income_sources = forms.ModelMultipleChoiceField(

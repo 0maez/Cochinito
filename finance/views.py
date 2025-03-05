@@ -40,7 +40,8 @@ def basic_expense_form(request):
             return redirect("wish_expense_form")
     else:
         form = BasicExpenseForm()
-    return render(request, "finance/basic_expense_form.html", {"form": form})
+    return render(request, "finance/basic_expense_form.html", {"form": form, "income_sources": income_sources})
+
 
 def wish_expense_form(request):
     basic_expense_ids = request.session.get("basic_expense_ids", [])
