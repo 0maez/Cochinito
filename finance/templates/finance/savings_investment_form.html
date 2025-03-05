@@ -1,0 +1,12 @@
+{% extends "finance/base.html" %}
+{% block content %}
+<div class="container">
+    <h2>Ahorros e Inversiones</h2>
+    <p>Selecciona tus opciones del 20% (puedes elegir más de una):</p>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.savings_investments }} 
+        <button type="submit" class="btn btn-primary">Finalizar</button>
+    </form>
+</div>
+{% endblock %}

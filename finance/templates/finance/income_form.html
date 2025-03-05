@@ -1,0 +1,12 @@
+{% extends "finance/base.html" %}
+{% block content %}
+<div class="container">
+    <h2>Fuentes de Ingresos</h2>
+    <p>Selecciona las fuentes de tus ingresos (puedes elegir más de una):</p>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.income_sources }}
+        <button type="submit" class="btn btn-primary">Siguiente</button>
+    </form>
+</div>
+{% endblock %}

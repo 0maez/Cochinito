@@ -1,0 +1,12 @@
+{% extends "finance/base.html" %}
+{% block content %}
+<div class="container">
+    <h2>Gastos de Deseos</h2>
+    <p>Selecciona tus gastos del 30% (puedes elegir más de una):</p>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.wish_expenses }}
+        <button type="submit" class="btn btn-primary">Siguiente</button>
+    </form>
+</div>
+{% endblock %}

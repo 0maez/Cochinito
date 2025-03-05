@@ -1,0 +1,34 @@
+{% extends "finance/base.html" %}
+{% block content %}
+<div class="container">
+    <h2>Dashboard</h2>
+    <h3>Ingresos</h3>
+    <ul>
+        {% for source in income_sources %}
+            <li>{{ source.name }}</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Gastos Básicos (50%)</h3>
+    <ul>
+        {% for expense in basic_expenses %}
+            <li>{{ expense.name }}</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Deseos (30%)</h3>
+    <ul>
+        {% for wish in wish_expenses %}
+            <li>{{ wish.name }}</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Ahorros e Inversiones (20%)</h3>
+    <ul>
+        {% for saving in savings_investments %}
+            <li>{{ saving.name }}</li>
+        {% endfor %}
+    </ul>
+
+</div>
+{% endblock %}

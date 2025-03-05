@@ -1,0 +1,170 @@
+[
+    {
+        "model": "finance.IncomeSource",
+        "fields": {"name": "Salario"}
+    },
+    {
+        "model": "finance.IncomeSource",
+        "fields": {"name": "Mesada"}
+    },
+    {
+        "model": "finance.IncomeSource",
+        "fields": {"name": "Pareja"}
+    },
+    {
+        "model": "finance.IncomeSource",
+        "fields": {"name": "Mis padres"}
+    },
+    {
+        "model": "finance.IncomeSource",
+        "fields": {"name": "Inversiones"}
+    },
+    {
+        "model": "finance.IncomeSource",
+        "fields": {"name": "Freelance"}
+    },
+    {
+        "model": "finance.IncomeSource",
+        "fields": {"name": "Bonos"}
+    },
+    {
+        "model": "finance.IncomeSource",
+        "fields": {"name": "Ventas"}
+    },
+    {
+        "model": "finance.BasicExpense",
+        "fields": {"name": "Alimentación"}
+    },
+    {
+        "model": "finance.BasicExpense",
+        "fields": {"name": "Transporte público"}
+    },
+    {
+        "model": "finance.BasicExpense",
+        "fields": {"name": "Vehículo propio"}
+    },
+    {
+        "model": "finance.BasicExpense",
+        "fields": {"name": "Gas"}
+    },
+    {
+        "model": "finance.BasicExpense",
+        "fields": {"name": "Luz"}
+    },
+    {
+        "model": "finance.BasicExpense",
+        "fields": {"name": "Agua"}
+    },
+    {
+        "model": "finance.BasicExpense",
+        "fields": {"name": "Renta"}
+    },
+    {
+        "model": "finance.BasicExpense",
+        "fields": {"name": "Educación"}
+    },
+    {
+        "model": "finance.BasicExpense",
+        "fields": {"name": "Internet"}
+    },
+    {
+        "model": "finance.BasicExpense",
+        "fields": {"name": "Teléfono"}
+    },
+    {
+        "model": "finance.BasicExpense",
+        "fields": {"name": "Seguro médico"}
+    },
+    {
+        "model": "finance.BasicExpense",
+        "fields": {"name": "Mantenimiento del hogar"}
+    },
+    {
+        "model": "finance.WishExpense",
+        "fields": {"name": "Golosinas"}
+    },
+    {
+        "model": "finance.WishExpense",
+        "fields": {"name": "Ropa"}
+    },
+    {
+        "model": "finance.WishExpense",
+        "fields": {"name": "Calzado"}
+    },
+    {
+        "model": "finance.WishExpense",
+        "fields": {"name": "Salud"}
+    },
+    {
+        "model": "finance.WishExpense",
+        "fields": {"name": "Rutina"}
+    },
+    {
+        "model": "finance.WishExpense",
+        "fields": {"name": "Entretenimiento"}
+    },
+    {
+        "model": "finance.WishExpense",
+        "fields": {"name": "Viajes"}
+    },
+    {
+        "model": "finance.WishExpense",
+        "fields": {"name": "Regalos"}
+    },
+    {
+        "model": "finance.WishExpense",
+        "fields": {"name": "Hobbies"}
+    },
+    {
+        "model": "finance.WishExpense",
+        "fields": {"name": "Tecnología"}
+    },
+    {
+        "model": "finance.WishExpense",
+        "fields": {"name": "Cuidado personal"}
+    },
+    {
+        "model": "finance.WishExpense",
+        "fields": {"name": "Eventos sociales"}
+    },
+    {
+        "model": "finance.WishExpense",
+        "fields": {"name": "Deportes"}
+    },
+    {
+        "model": "finance.SavingsInvestment",
+        "fields": {"name": "Ahorros"}
+    },
+    {
+        "model": "finance.SavingsInvestment",
+        "fields": {"name": "Inversiones"}
+    },
+    {
+        "model": "finance.SavingsInvestment",
+        "fields": {"name": "Fondo de emergencia"}
+    },
+    {
+        "model": "finance.SavingsInvestment",
+        "fields": {"name": "Bienes raíces"}
+    },
+    {
+        "model": "finance.SavingsInvestment",
+        "fields": {"name": "Bolsa de valores"}
+    },
+    {
+        "model": "finance.SavingsInvestment",
+        "fields": {"name": "Plan de retiro"}
+    },
+    {
+        "model": "finance.SavingsInvestment",
+        "fields": {"name": "Negocios propios"}
+    },
+    {
+        "model": "finance.SavingsInvestment",
+        "fields": {"name": "Criptomonedas"}
+    },
+    {
+        "model": "finance.SavingsInvestment",
+        "fields": {"name": "Educacion continua"}
+    }
+]
