@@ -76,6 +76,7 @@ def savings_investment_form(request):
         form = SavingsInvestmentForm()
     return render(request, "finance/savings_investment_form.html", {"form": form})  
 
+@login_required
 def dashboard(request):
     # Recupera todos los IDs almacenados en la sesión
     income_source_ids = request.session.get("income_source_ids", [])
@@ -92,14 +93,16 @@ def dashboard(request):
     # Obtener el presupuesto del usuario actual (si existe)
     user_budget = Budget.objects.filter(user=request.user).first()  # Suponiendo que usas el modelo Budget para almacenar el presupuesto
 
-    # Calcular los valores de 50%, 30% y 20% si existe un presupuesto
+    # Verificamos si el presupuesto existe, y si es así, calculamos los valores de los porcentajes
     available_for_basic_expenses = Decimal(0)
     available_for_wish_expenses = Decimal(0)
     available_for_savings = Decimal(0)
+    total_amount = Decimal(0)
     if user_budget:
-        available_for_basic_expenses = user_budget.total_amount * Decimal(0.50)
-        available_for_wish_expenses = user_budget.total_amount * Decimal(0.30)
-        available_for_savings = user_budget.total_amount * Decimal(0.20)
+        total_amount = user_budget.total_amount  # Usamos el total_amount directamente para los cálculos de los porcentajes
+        available_for_basic_expenses = total_amount * Decimal(0.50)
+        available_for_wish_expenses = total_amount * Decimal(0.30)
+        available_for_savings = total_amount * Decimal(0.20)
 
     # Renderiza el dashboard con los datos
     return render(request, "finance/dashboard.html", {
@@ -108,10 +111,12 @@ def dashboard(request):
         "wish_expenses": wish_expenses,
         "savings_investments": savings_investments,
         "user_budget": user_budget,
+        "total_amount": total_amount,
         "available_for_basic_expenses": available_for_basic_expenses,
         "available_for_wish_expenses": available_for_wish_expenses,
         "available_for_savings": available_for_savings,
     })
+
 @login_required
 def create_budget(request):
     if request.method == 'POST':
