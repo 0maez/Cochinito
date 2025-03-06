@@ -123,7 +123,8 @@ def create_budget(request):
         form = BudgetForm(request.POST)
         if form.is_valid():
             budget = form.save(commit=False)
-            budget.user = request.user  # Asocia el presupuesto al usuario
+            budget.user = request.user
+            budget.current_balance = budget.total_amount  # Asignar saldo inicial igual al presupuesto inicial
             budget.save()
             return redirect('basic_expense_form')  # Redirige al siguiente paso
     else:
