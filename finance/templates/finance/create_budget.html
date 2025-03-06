@@ -1,0 +1,9 @@
+{% extends "finance/base.html" %}
+{% block content %}
+<h2>Introduce tu presupuesto inicial</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Guardar presupuesto</button>
+</form>
+{% endblock %}

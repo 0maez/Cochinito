@@ -1,7 +1,13 @@
 {% extends "finance/base.html" %}
+
 {% block content %}
 <div class="container">
     <h2>Dashboard</h2>
+
+    <!-- Mostrar el presupuesto total -->
+    <h3>Presupuesto Total</h3>
+    <p>{{ user_budget.total_amount|floatformat:2 }}</p>  <!-- Mostrar el presupuesto total con 2 decimales -->
+
     <h3>Ingresos</h3>
     <ul>
         {% for source in income_sources %}
@@ -10,23 +16,26 @@
     </ul>
 
     <h3>Gastos Básicos (50%)</h3>
+    <p>Disponible: {{ available_for_basic_expenses|floatformat:2 }}</p>  <!-- Mostrar el cálculo de 50% con 2 decimales -->
     <ul>
         {% for expense in basic_expenses %}
-            <li>{{ expense.name }}</li>
+            <li>{{ expense.name }}: {{ expense.amount|floatformat:2 }}</li> <!-- Mostrar el monto de cada gasto básico con 2 decimales -->
         {% endfor %}
     </ul>
 
     <h3>Deseos (30%)</h3>
+    <p>Disponible: {{ available_for_wish_expenses|floatformat:2 }}</p>  <!-- Mostrar el cálculo de 30% con 2 decimales -->
     <ul>
         {% for wish in wish_expenses %}
-            <li>{{ wish.name }}</li>
+            <li>{{ wish.name }}: {{ wish.amount|floatformat:2 }}</li> <!-- Mostrar el monto de cada gasto de deseo con 2 decimales -->
         {% endfor %}
     </ul>
 
     <h3>Ahorros e Inversiones (20%)</h3>
+    <p>Disponible: {{ available_for_savings|floatformat:2 }}</p>  <!-- Mostrar el cálculo de 20% con 2 decimales -->
     <ul>
         {% for saving in savings_investments %}
-            <li>{{ saving.name }}</li>
+            <li>{{ saving.name }}: {{ saving.amount|floatformat:2 }}</li> <!-- Mostrar el monto de cada inversión o ahorro con 2 decimales -->
         {% endfor %}
     </ul>
 

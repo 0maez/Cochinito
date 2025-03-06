@@ -1,4 +1,5 @@
 from django.db import models
+from decimal import Decimal
 from django.contrib.auth.models import User
 
 class Profile(models.Model):
@@ -37,12 +38,25 @@ class Income(models.Model):
         return f"{self.amount} - {self.category.name}"
 
 class Budget(models.Model):
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    basic_expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    wish_expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    savings_investments = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        # Convertimos los valores flotantes a Decimal antes de realizar la operación
+        total_amount = Decimal(self.total_amount)  # Aseguramos que sea Decimal
+
+        self.basic_expenses = total_amount * Decimal('0.5')  # 50% para gastos básicos
+        self.wish_expenses = total_amount * Decimal('0.3')   # 30% para deseos
+        self.savings_investments = total_amount * Decimal('0.2')  # 20% para ahorros e inversiones
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.amount} - {self.category.name}"
+        return f"Presupuesto de {self.user.username}: {self.total_amount}"
 
 class Resource(models.Model):
     title = models.CharField(max_length=200)
