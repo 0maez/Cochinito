@@ -42,42 +42,38 @@ class Income(models.Model):
 
 class Budget(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2)  # Presupuesto inicial
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)  # Presupuesto actual (modificable con ingresos)
     current_balance = models.DecimalField(max_digits=10, decimal_places=2)  # Saldo actual
     basic_expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     wish_expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     savings_investments = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)  # Para saber cuándo fue la última actualización
+    updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        total_amount = Decimal(self.total_amount)
+        # Porcentajes siempre basados en el presupuesto actual
+        self.basic_expenses = self.total_amount * Decimal('0.5')
+        self.wish_expenses = self.total_amount * Decimal('0.3')
+        self.savings_investments = self.total_amount * Decimal('0.2')
 
-        self.basic_expenses = total_amount * Decimal('0.5')
-        self.wish_expenses = total_amount * Decimal('0.3')
-        self.savings_investments = total_amount * Decimal('0.2')
-
-        if self.current_balance <= total_amount * Decimal('0.15'):
-            print(f"⚠️ Alerta: Tu saldo está por debajo del 15% del presupuesto inicial ({total_amount * Decimal('0.15'):.2f})")
+        if self.current_balance <= self.total_amount * Decimal('0.15'):
+            print(f"⚠️ Alerta: Tu saldo está por debajo del 15% del presupuesto actual ({self.total_amount * Decimal('0.15'):.2f})")
 
         super().save(*args, **kwargs)
 
     def update_balance_with_income(self, amount):
-        """Sumar un ingreso y actualizar presupuesto y porcentajes"""
+        """Sumar un ingreso, actualizar saldo y presupuesto"""
         self.current_balance += Decimal(amount)
-        self.total_amount = self.current_balance  # Ahora el presupuesto se actualiza
-        self.basic_expenses = self.total_amount * Decimal('0.5')
-        self.wish_expenses = self.total_amount * Decimal('0.3')
-        self.savings_investments = self.total_amount * Decimal('0.2')
+        self.total_amount += Decimal(amount)  # ✅ El presupuesto crece con los ingresos
         self.save()
 
     def update_balance_with_expense(self, amount):
-        """Restar un gasto al saldo actual"""
+        """Restar un gasto del saldo actual"""
         self.current_balance -= Decimal(amount)
         self.save()
 
     def is_balance_low(self):
-        """Verifica si el saldo está por debajo del 15% del presupuesto inicial"""
+        """Verifica si el saldo está por debajo del 15% del presupuesto actual"""
         threshold = self.total_amount * Decimal('0.15')
         return self.current_balance <= threshold
 
@@ -133,20 +129,30 @@ class SavingsInvestment(models.Model):
         return self.name
     
 class Transaction(models.Model):
-    TRANSACTION_TYPES = [
+    TRANSACTION_TYPES = (
         ('income', 'Ingreso'),
         ('expense', 'Gasto'),
-    ]
-
+    )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    budget = models.ForeignKey('Budget', on_delete=models.CASCADE)
-    transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPES)
+    budget = models.ForeignKey(Budget, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    description = models.CharField(max_length=255, blank=True, null=True)
+    transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPES)
+    category = models.CharField(max_length=100, blank=True, null=True)  # Opcional
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+        if not self.pk:  # Solo si es nueva transacción
+            if self.transaction_type == 'income':
+                self.budget.update_balance_with_income(self.amount)
+            elif self.transaction_type == 'expense':
+                self.budget.update_balance_with_expense(self.amount)
+
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"{self.get_transaction_type_display()} - {self.amount}"
+        return f"{self.get_transaction_type_display()}: {self.name} ({self.amount})"
+
 
 @receiver(post_save, sender=Transaction)
 def update_budget_on_transaction(sender, instance, created, **kwargs):
