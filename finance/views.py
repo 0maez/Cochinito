@@ -64,15 +64,15 @@ def savings_investment_form(request):
     if request.method == "POST":
         form = SavingsInvestmentForm(request.POST)
         if form.is_valid():
-            # Guarda los IDs de las opciones de ahorro e inversión seleccionadas
+            
             savings_investment_ids = list(form.cleaned_data["savings_investments"].values_list("id", flat=True))
             request.session["savings_investment_ids"] = savings_investment_ids
-            return redirect("dashboard")  # Redirige al dashboard después de completar todos los formularios
+            return redirect("profile")  
     else:
         form = SavingsInvestmentForm()
     return render(request, "finance/savings_investment_form.html", {"form": form})  
 
-def dashboard(request):
+def profile(request):
     # Recupera todos los IDs almacenados en la sesión
     income_source_ids = request.session.get("income_source_ids", [])
     basic_expense_ids = request.session.get("basic_expense_ids", [])
@@ -85,8 +85,8 @@ def dashboard(request):
     wish_expenses = WishExpense.objects.filter(id__in=wish_expense_ids)
     savings_investments = SavingsInvestment.objects.filter(id__in=savings_investment_ids)
     
-    # Renderiza el dashboard con los datos
-    return render(request, "finance/dashboard.html", {
+    
+    return render(request, "finance/profile.html", {
         "income_sources": income_sources,
         "basic_expenses": basic_expenses,
         "wish_expenses": wish_expenses,
