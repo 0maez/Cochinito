@@ -112,6 +112,7 @@ class TransactionHistory(models.Model):
         return f"{self.transaction_type} - {self.transaction_date}"
     
 class IncomeSource(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=100)
 
     def __str__(self):
@@ -142,7 +143,7 @@ class Transaction(models.Model):
     )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     budget = models.ForeignKey(Budget, on_delete=models.CASCADE)
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, default="Sin nombre")
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPES)
     category = models.CharField(max_length=100, blank=True, null=True)  # Opcional
@@ -178,12 +179,13 @@ from django.contrib.auth.models import User
 
 
 class Reminder(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Asegúrate de que esta línea esté presente
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     date = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
+    is_paid = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.name} - {self.date}"

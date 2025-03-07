@@ -1,0 +1,25 @@
+{% extends "finance/base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Mis Recordatorios</h2>
+    
+    <form method="POST" action="{% url 'mark_reminder_paid' %}">
+        {% csrf_token %}
+        <ul>
+            {% for reminder in reminders %}
+                <li>
+                    <label>
+                        <input type="checkbox" name="reminder_ids" value="{{ reminder.id }}">
+                        <strong>{{ reminder.name }}</strong> - {{ reminder.date|date:"d/m/Y" }} - ${{ reminder.amount|floatformat:2 }}
+                    </label>
+                    <p>{{ reminder.description }}</p>
+                </li>
+            {% empty %}
+                <li>No tienes recordatorios pendientes.</li>
+            {% endfor %}
+        </ul>
+        <button type="submit" class="btn btn-success">Marcar como pagados</button>
+    </form>
+</div>
+{% endblock %}
