@@ -30,11 +30,8 @@ urlpatterns = [
     path("finance/basic-expense-form/", views.basic_expense_form, name="basic_expense_form"),
     path("finance/wish-expense-form/", views.wish_expense_form, name="wish_expense_form"),
     path("finance/savings-investment-form/", views.savings_investment_form, name="savings_investment_form"),
-    path("finance/dashboard/", views.dashboard, name="dashboard"),
-    path("accounts/password_reset/", auth_views.PasswordResetView.as_view(), name="password_reset"),
-    path("accounts/password_reset/done/", auth_views.PasswordResetDoneView.as_view(), name="password_reset_done"),
-    path("accounts/reset/<uidb64>/<token>/", auth_views.PasswordResetConfirmView.as_view(), name="password_reset_confirm"),
-    path("accounts/reset/done/", auth_views.PasswordResetCompleteView.as_view(), name="password_reset_complete"), 
+    path("finance/profile/", views.profile, name="profile"),
+    path("accounts/", include("django.contrib.auth.urls")), 
 ]
 
 
