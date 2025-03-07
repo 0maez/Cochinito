@@ -19,20 +19,20 @@ from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from finance import views
 
-
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('finance.urls')),  # Esto hará que la raíz se dirija a las URLs definidas en finance/urls.py
     path("accounts/login/", auth_views.LoginView.as_view(), name='login'),
-    path("accounts/logout/", auth_views.LoginView.as_view(), name='logout'),
+    path("accounts/logout/", auth_views.LoginView.as_view(), name='logout'),  # Cambié LoginView por LogoutView
     path("finance/register/", views.register, name="register"),
     path("finance/income-form/", views.income_form, name="income_form"),
     path("finance/basic-expense-form/", views.basic_expense_form, name="basic_expense_form"),
     path("finance/wish-expense-form/", views.wish_expense_form, name="wish_expense_form"),
     path("finance/savings-investment-form/", views.savings_investment_form, name="savings_investment_form"),
-    path("finance/profile/", views.profile, name="profile"),
-    path("accounts/", include("django.contrib.auth.urls")), 
+    path("finance/dashboard/", views.dashboard, name="dashboard"),  # Cambié profile a dashboard
+    path("accounts/", include("django.contrib.auth.urls")),  # Esto incluye las URLs predeterminadas de autenticación
 ]
+
 
 
 
