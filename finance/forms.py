@@ -2,6 +2,8 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import Profile, IncomeSource, BasicExpense, WishExpense, SavingsInvestment
+from .models import Budget
+
 
 class RegisterForm(UserCreationForm):
     first_name = forms.CharField(max_length=100, required=True)
@@ -57,3 +59,12 @@ class ProfileForm(forms.ModelForm):
     class Meta: 
         model = User
         fields = ["username", "email", "first_name", "last_name"]
+
+class BudgetForm(forms.ModelForm):
+    class Meta:
+        model = Budget
+        fields = ['total_amount']  # Solo necesitamos el campo total_amount por ahora
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['total_amount'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Ingresa tu presupuesto inicial'})
