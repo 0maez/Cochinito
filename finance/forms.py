@@ -1,8 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Profile, IncomeSource, BasicExpense, WishExpense, SavingsInvestment
-from .models import Budget
+from .models import Profile, IncomeSource, BasicExpense, WishExpense, SavingsInvestment, Reminder, Budget
+
 
 
 class RegisterForm(UserCreationForm):
