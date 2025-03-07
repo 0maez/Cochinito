@@ -1,0 +1,15 @@
+{% extends 'finance/base.html' %}
+
+{% block content %}
+<h1>Transacciones</h1>
+<a href="{% url 'transaction_create' %}">Agregar transacción</a>
+<ul>
+    {% for transaction in transactions %}
+    <li>
+        {{ transaction.description }} - {{ transaction.amount }} ({{ transaction.date }})
+        <a href="{% url 'transaction_update' transaction.pk %}">Editar</a>
+        <a href="{% url 'transaction_delete' transaction.pk %}">Eliminar</a>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

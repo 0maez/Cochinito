@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Profile, IncomeSource, BasicExpense, WishExpense, SavingsInvestment
+from .models import Profile, IncomeSource, BasicExpense, WishExpense, SavingsInvestment, Transaction
 from .models import Budget
 
 
@@ -68,3 +68,17 @@ class BudgetForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['total_amount'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Ingresa tu presupuesto inicial'})
+        
+class TransactionForm(forms.ModelForm):
+    class Meta:
+        model = Transaction
+        fields = fields = ['name', 'amount', 'transaction_type', 'income_source', 'basic_expense', 'wish_expense', 'savings_investment', 'category']
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user:
+            self.fields['income_source'].queryset = IncomeSource.objects.filter(user=user)
+            self.fields['basic_expense'].queryset = BasicExpense.objects.filter(user=user)
+            self.fields['wish_expense'].queryset = WishExpense.objects.filter(user=user)
+            self.fields['savings_investment'].queryset = SavingsInvestment.objects.filter(user=user)

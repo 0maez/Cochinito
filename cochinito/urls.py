@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from finance import views
+from finance.views import TransactionListView, TransactionCreateView, TransactionUpdateView, TransactionDeleteView
 
 
 urlpatterns = [
@@ -31,7 +32,11 @@ urlpatterns = [
     path("finance/wish-expense-form/", views.wish_expense_form, name="wish_expense_form"),
     path("finance/savings-investment-form/", views.savings_investment_form, name="savings_investment_form"),
     path("finance/profile/", views.profile, name="profile"),
-    path("accounts/", include("django.contrib.auth.urls")), 
+    path("accounts/", include("django.contrib.auth.urls")),
+    path('transactions/', TransactionListView.as_view(), name='transaction_list'),
+    path('transactions/create/', TransactionCreateView.as_view(), name='transaction_create'),
+    path('transactions/update/<int:pk>/', TransactionUpdateView.as_view(), name='transaction_update'),
+    path('transactions/delete/<int:pk>/', TransactionDeleteView.as_view(), name='transaction_delete'), 
 ]
 
 
