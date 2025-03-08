@@ -4,48 +4,53 @@
 <div class="container">
     <h2>Profile</h2>
 
-    <!-- Mostrar el presupuesto total -->
+
     <h3>Presupuesto Total</h3>
-    <p>{{ user_budget.total_amount|floatformat:2 }}</p>  <!-- Mostrar el presupuesto total con 2 decimales -->
+    <p>{{ user_budget.total_amount|floatformat:2 }}</p>  
 
-    <!-- Mostrar el saldo actual -->
+
     <h3>Saldo Actual</h3>
-    <p>{{ user_budget.current_balance|floatformat:2 }}</p>  <!-- Mostrar el saldo actual con 2 decimales -->
+    <p>{{ user_budget.current_balance|floatformat:2 }}</p>  
 
-    <!-- Mostrar los ingresos -->
+
     <h3>Ingresos</h3>
     <ul>
         {% for source in income_sources %}
-            <li>{{ source.name }}: {{ source.amount|floatformat:2 }}</li>  <!-- Mostrar el monto de cada ingreso con 2 decimales -->
+            <li>{{ source.name }}</li>  
         {% endfor %}
     </ul>
 
-    <!-- Mostrar los gastos básicos (50%) -->
+
     <h3>Gastos Básicos (50%)</h3>
-    <p>Disponible: {{ available_for_basic_expenses|floatformat:2 }}</p>  <!-- Mostrar el cálculo de 50% con 2 decimales -->
+    <p>Disponible: {{ available_for_basic_expenses|floatformat:2 }}</p>  
     <ul>
         {% for expense in basic_expenses %}
-            <li>{{ expense.name }}: {{ expense.amount|floatformat:2 }}</li>  <!-- Mostrar el monto de cada gasto básico con 2 decimales -->
+            <li>{{ expense.name }}</li>  
         {% endfor %}
     </ul>
 
-    <!-- Mostrar los deseos (30%) -->
+
     <h3>Deseos (30%)</h3>
-    <p>Disponible: {{ available_for_wish_expenses|floatformat:2 }}</p>  <!-- Mostrar el cálculo de 30% con 2 decimales -->
+    <p>Disponible: {{ available_for_wish_expenses|floatformat:2 }}</p>  
     <ul>
         {% for wish in wish_expenses %}
-            <li>{{ wish.name }}: {{ wish.amount|floatformat:2 }}</li>  <!-- Mostrar el monto de cada gasto de deseo con 2 decimales -->
+            <li>{{ wish.name }}</li>  
         {% endfor %}
     </ul>
 
-    <!-- Mostrar los ahorros e inversiones (20%) -->
+    
     <h3>Ahorros e Inversiones (20%)</h3>
-    <p>Disponible: {{ available_for_savings|floatformat:2 }}</p>  <!-- Mostrar el cálculo de 20% con 2 decimales -->
+    <p>Disponible: {{ available_for_savings|floatformat:2 }}</p>  
     <ul>
         {% for saving in savings_investments %}
-            <li>{{ saving.name }}: {{ saving.amount|floatformat:2 }}</li>  <!-- Mostrar el monto de cada ahorro o inversión con 2 decimales -->
+            <li>{{ saving.name }}</li>  
         {% endfor %}
     </ul>
 
 </div>
+
+<a href="{% url 'add_income' %}">Agregar Ingreso</a>
+<a href="{% url 'add_expense' %}">Agregar Gasto</a>
+<a class="nav-link" href="{% url 'transaction_list' %}">Historial de Transacciones</a>
+
 {% endblock %}

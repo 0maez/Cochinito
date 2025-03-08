@@ -3,9 +3,7 @@
 {% block content %}
 <div class="card">
     <div class="card-header">
-        <h2 class="card-title">
-            {% if object %}Editar{% else %}Agregar{% endif %} Transacción
-        </h2>
+        <h2 class="card-title">Agregar Gasto</h2>
     </div>
     <div class="card-body">
         <form method="post">
@@ -38,37 +36,23 @@
                     <div class="text-danger">{{ form.category.errors }}</div>
                 {% endif %}
             </div>
-            {% if form.income_source %}
-                <div class="mb-3">
-                    {{ form.income_source.label_tag }}
-                    {{ form.income_source }}
-                    {% if form.income_source.errors %}
-                        <div class="text-danger">{{ form.income_source.errors }}</div>
-                    {% endif %}
-                </div>
-            {% endif %}
-            {% if form.basic_expense %}
-                <div class="mb-3">
-                    {{ form.basic_expense.label_tag }}
-                    {{ form.basic_expense }}
-                    {% if form.basic_expense.errors %}
-                        <div class="text-danger">{{ form.basic_expense.errors }}</div>
-                    {% endif %}
-                </div>
-            {% endif %}
-            {% if form.wish_expense %}
-                <div class="mb-3">
-                    {{ form.wish_expense.label_tag }}
-                    {{ form.wish_expense }}
-                    {% if form.wish_expense.errors %}
-                        <div class="text-danger">{{ form.wish_expense.errors }}</div>
-                    {% endif %}
-                </div>
-            {% endif %}
+            <div class="mb-3">
+                {{ form.basic_expense.label_tag }}
+                {{ form.basic_expense }}
+                {% if form.basic_expense.errors %}
+                    <div class="text-danger">{{ form.basic_expense.errors }}</div>
+                {% endif %}
+            </div>
+            <div class="mb-3">
+                {{ form.wish_expense.label_tag }}
+                {{ form.wish_expense }}
+                {% if form.wish_expense.errors %}
+                    <div class="text-danger">{{ form.wish_expense.errors }}</div>
+                {% endif %}
+            </div>
             <button type="submit" class="btn btn-primary">Guardar</button>
             <a href="{% url 'transaction_list' %}" class="btn btn-secondary">Cancelar</a>
         </form>
     </div>
 </div>
 {% endblock %}
-

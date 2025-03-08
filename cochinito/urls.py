@@ -18,12 +18,12 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from finance import views
-from finance.views import TransactionListView, TransactionCreateView, TransactionUpdateView, TransactionDeleteView
+from finance.views import IncomeCreateView, ExpenseCreateView, TransactionUpdateView, TransactionDeleteView, TransactionListView
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('finance.urls')),  # Esto hará que la raíz se dirija a las URLs definidas en finance/urls.py
+    path('', include('finance.urls')),
     path("accounts/login/", auth_views.LoginView.as_view(), name='login'),
     path("accounts/logout/", auth_views.LoginView.as_view(), name='logout'),
     path("finance/register/", views.register, name="register"),
@@ -33,10 +33,11 @@ urlpatterns = [
     path("finance/savings-investment-form/", views.savings_investment_form, name="savings_investment_form"),
     path("finance/profile/", views.profile, name="profile"),
     path("accounts/", include("django.contrib.auth.urls")),
+    path('transaction/add/income/', IncomeCreateView.as_view(), name='add_income'),
+    path('transaction/add/expense/', ExpenseCreateView.as_view(), name='add_expense'),
     path('transactions/', TransactionListView.as_view(), name='transaction_list'),
-    path('transactions/create/', TransactionCreateView.as_view(), name='transaction_create'),
-    path('transactions/update/<int:pk>/', TransactionUpdateView.as_view(), name='transaction_update'),
-    path('transactions/delete/<int:pk>/', TransactionDeleteView.as_view(), name='transaction_delete'), 
+    path('transactions/update/<int:pk>/', TransactionUpdateView.as_view(), name='update_transaction'),
+    path('transactions/delete/<int:pk>/', TransactionDeleteView.as_view(), name='delete_transaction'), 
 ]
 
 

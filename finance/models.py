@@ -6,31 +6,35 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE,)
     age = models.PositiveIntegerField()
 
     def __str__(self):
         return f"{self.user.username}'s Profile"
     
 class IncomeSource(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=100)
 
     def __str__(self):
         return self.name
     
 class BasicExpense(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=100)
     
     def __str__(self):
         return self.name
     
 class WishExpense(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=100)
 
     def __str__(self):
         return self.name
 
 class SavingsInvestment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=100)
 
     def __str__(self):
@@ -38,8 +42,8 @@ class SavingsInvestment(models.Model):
 
 class Budget(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2)  # Presupuesto actual
-    current_balance = models.DecimalField(max_digits=10, decimal_places=2)  # Saldo actual
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)  
+    current_balance = models.DecimalField(max_digits=10, decimal_places=2)  
     basic_expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     wish_expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     savings_investments = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -48,35 +52,28 @@ class Budget(models.Model):
 
     def save(self, *args, **kwargs):
         total_amount = Decimal(self.total_amount)
-
         
         if self.current_balance is None:
             self.current_balance = total_amount
-
-        # Recalcular las proporciones siempre que se guarda
         self.basic_expenses = total_amount * Decimal('0.5')
         self.wish_expenses = total_amount * Decimal('0.3')
         self.savings_investments = total_amount * Decimal('0.2')
 
-        # Alerta de saldo bajo
         if self.current_balance <= total_amount * Decimal('0.15'):
             print(f"⚠️ Alerta: Tu saldo está por debajo del 15% del presupuesto inicial ({total_amount * Decimal('0.15'):.2f})")
 
         super().save(*args, **kwargs)
 
     def update_balance_with_income(self, amount):
-        """Sumar un ingreso, actualizar saldo y presupuesto"""
         self.current_balance += Decimal(amount)
         self.total_amount += Decimal(amount)
         self.save()
 
     def update_balance_with_expense(self, amount):
-        """Restar un gasto del saldo actual"""
         self.current_balance -= Decimal(amount)
         self.save()
 
     def is_balance_low(self):
-        """Verifica si el saldo está por debajo del 15% del presupuesto actual"""
         threshold = self.total_amount * Decimal('0.15')
         return self.current_balance <= threshold
 
@@ -104,9 +101,11 @@ class Transaction(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:  
             if self.transaction_type == 'income':
-                self.budget.update_balance_with_income(self.amount)
+                if self.budget:  
+                    self.budget.update_balance_with_income(self.amount)
             elif self.transaction_type == 'expense':
-                self.budget.update_balance_with_expense(self.amount)
+                if self.budget:  
+                    self.budget.update_balance_with_expense(self.amount)
 
         super().save(*args, **kwargs)
 
