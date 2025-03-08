@@ -5,16 +5,12 @@
     <h2>Dashboard</h2>
 
 
-
-    <!-- Mostrar el presupuesto total -->
     <h3>Presupuesto Total</h3>
     <p>{{ user_budget.total_amount|floatformat:2 }}</p>
 
-    <!-- Mostrar el saldo actual -->
     <h3>Saldo Actual</h3>
     <p>{{ user_budget.current_balance|floatformat:2 }}</p>
 
-    <!-- Mostrar los recordatorios como checklist -->
     <h3>Recordatorios</h3>
     <form method="POST" action="{% url 'mark_reminder_paid' %}">
         {% csrf_token %}
@@ -30,13 +26,10 @@
         </ul>
         <button type="submit" class="btn btn-success">Actualizar Recordatorios</button>
     </form>
-    <!-- Botón para ver la lista completa de recordatorios -->
 <a href="{% url 'reminder_list' %}" class="btn btn-info" style="margin-bottom: 20px;">Ver todos los Recordatorios</a>
-    <!-- Botón para crear recordatorio -->
 <a href="{% url 'create_reminder' %}" class="btn btn-primary" style="margin-bottom: 20px;">Crear Recordatorio</a>
 
 
-    <!-- Mostrar los ingresos -->
     <h3>Ingresos</h3>
     <ul>
         {% for source in income_sources %}
@@ -44,7 +37,6 @@
         {% endfor %}
     </ul>
 
-    <!-- Mostrar los gastos básicos (50%) -->
     <h3>Gastos Básicos (50%)</h3>
     <p>Disponible: {{ available_for_basic_expenses|floatformat:2 }}</p>
     <ul>
@@ -53,7 +45,6 @@
         {% endfor %}
     </ul>
 
-    <!-- Mostrar los deseos (30%) -->
     <h3>Deseos (30%)</h3>
     <p>Disponible: {{ available_for_wish_expenses|floatformat:2 }}</p>
     <ul>
@@ -62,7 +53,6 @@
         {% endfor %}
     </ul>
 
-    <!-- Mostrar los ahorros e inversiones (20%) -->
     <h3>Ahorros e Inversiones (20%)</h3>
     <p>Disponible: {{ available_for_savings|floatformat:2 }}</p>
     <ul>

@@ -42,8 +42,8 @@ class Income(models.Model):
 
 class Budget(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2)  # Presupuesto actual
-    current_balance = models.DecimalField(max_digits=10, decimal_places=2)  # Saldo actual
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)  
+    current_balance = models.DecimalField(max_digits=10, decimal_places=2)  
     basic_expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     wish_expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     savings_investments = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -53,16 +53,13 @@ class Budget(models.Model):
     def save(self, *args, **kwargs):
         total_amount = Decimal(self.total_amount)
 
-        # Si no hay saldo actual, lo igualamos al presupuesto inicial
         if self.current_balance is None:
             self.current_balance = total_amount
 
-        # Recalcular las proporciones siempre que se guarda
         self.basic_expenses = total_amount * Decimal('0.5')
         self.wish_expenses = total_amount * Decimal('0.3')
         self.savings_investments = total_amount * Decimal('0.2')
 
-        # Alerta de saldo bajo
         if self.current_balance <= total_amount * Decimal('0.15'):
             print(f"⚠️ Alerta: Tu saldo está por debajo del 15% del presupuesto inicial ({total_amount * Decimal('0.15'):.2f})")
 
@@ -106,7 +103,7 @@ class TransactionHistory(models.Model):
     transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPES)
     transaction_date = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    details = models.TextField()  # Detalles del cambio
+    details = models.TextField()  
 
     def __str__(self):
         return f"{self.transaction_type} - {self.transaction_date}"
@@ -179,7 +176,7 @@ from django.contrib.auth.models import User
 
 
 class Reminder(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Asegúrate de que esta línea esté presente
+    user = models.ForeignKey(User, on_delete=models.CASCADE) 
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)

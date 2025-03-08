@@ -15,11 +15,11 @@ def register(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
-            user = form.save()  # Esto crea al usuario y guarda el perfil
-            login(request, user)  # Loguea al usuario automáticamente
-            return redirect('create_budget')  # Redirige a la página de inicio o alguna otra página
+            user = form.save()  
+            login(request, user)  
+            return redirect('create_budget')  
     else:
-        form = RegisterForm()  # Usamos el formulario personalizado
+        form = RegisterForm()  
     return render(request, 'finance/register.html', {'form': form})
 
 
@@ -71,7 +71,7 @@ def savings_investment_form(request):
         if form.is_valid():
             savings_investment_ids = list(form.cleaned_data["savings_investments"].values_list("id", flat=True))
             request.session["savings_investment_ids"] = savings_investment_ids
-            return redirect("dashboard")  # Redirige a dashboard en vez de profile
+            return redirect("dashboard")  
     else:
         form = SavingsInvestmentForm()
     return render(request, "finance/savings_investment_form.html", {"form": form})
@@ -79,31 +79,26 @@ def savings_investment_form(request):
 
 @login_required
 def dashboard(request):
-    # Obtener el presupuesto del usuario sin lanzar excepción si no existe
+
     user_budget = Budget.objects.filter(user=request.user).first()
     if not user_budget:
-        # Si el usuario no tiene presupuesto, redirige a la vista de creación de presupuesto
         return redirect('create_budget')
 
-    # Recupera todos los IDs almacenados en la sesión
     income_source_ids = request.session.get("income_source_ids", [])
     basic_expense_ids = request.session.get("basic_expense_ids", [])
     wish_expense_ids = request.session.get("wish_expense_ids", [])
     savings_investment_ids = request.session.get("savings_investment_ids", [])
 
-    # Obtén los objetos completos desde la base de datos
     income_sources = IncomeSource.objects.filter(user=request.user)
     basic_expenses = BasicExpense.objects.filter(id__in=basic_expense_ids)
     wish_expenses = WishExpense.objects.filter(id__in=wish_expense_ids)
     savings_investments = SavingsInvestment.objects.filter(id__in=savings_investment_ids)
 
-    # Calcular los porcentajes basados en el presupuesto total (total_amount)
     total_amount = user_budget.total_amount
     available_for_basic_expenses = total_amount * Decimal('0.50')
     available_for_wish_expenses = total_amount * Decimal('0.30')
     available_for_savings = total_amount * Decimal('0.20')
 
-    # Obtener los recordatorios del usuario (solo los no pagados)
     reminders = Reminder.objects.filter(user=request.user, is_paid=False).order_by('date')
 
     context = {
@@ -129,9 +124,9 @@ def create_budget(request):
         if form.is_valid():
             budget = form.save(commit=False)
             budget.user = request.user
-            budget.current_balance = budget.total_amount  # Asignar saldo inicial igual al presupuesto inicial
+            budget.current_balance = budget.total_amount  
             budget.save()
-            return redirect('basic_expense_form')  # Redirige al siguiente paso
+            return redirect('basic_expense_form')  
     else:
         form = BudgetForm()
     return render(request, 'finance/create_budget.html', {'form': form})
@@ -145,7 +140,7 @@ def create_reminder(request):
             reminder = form.save(commit=False)
             reminder.user = request.user
             reminder.save()
-            return redirect('dashboard')  # O donde quieras redirigir
+            return redirect('dashboard')  
     else:
         form = ReminderForm()
     return render(request, 'finance/create_reminder.html', {'form': form})
@@ -165,12 +160,12 @@ def mark_reminder_paid(request):
                 reminder.save()
             except Reminder.DoesNotExist:
                 pass
-    return redirect('reminder_list')  # O redirige al dashboard, según prefieras
+    return redirect('reminder_list')  
 
 
 @login_required
 def reminder_list(request):
-    # Obtén todos los recordatorios pendientes (no pagados) para el usuario
+
     reminders = Reminder.objects.filter(user=request.user, is_paid=False).order_by('date')
     context = {
         'reminders': reminders,

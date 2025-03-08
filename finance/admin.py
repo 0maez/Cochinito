@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import Profile, Category, Expense, Income, Budget, Resource, TransactionHistory, IncomeSource, BasicExpense, WishExpense, SavingsInvestment, Reminder
 
-# Registrar los modelos
+
 admin.site.register(Profile)
 admin.site.register(Category)
 admin.site.register(Expense)

@@ -63,7 +63,7 @@ class ProfileForm(forms.ModelForm):
 class BudgetForm(forms.ModelForm):
     class Meta:
         model = Budget
-        fields = ['total_amount']  # Solo necesitamos el campo total_amount por ahora
+        fields = ['total_amount']  
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
