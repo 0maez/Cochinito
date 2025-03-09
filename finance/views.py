@@ -6,7 +6,7 @@ from django.urls import reverse_lazy
 from .forms import RegisterForm, IncomeForm, BasicExpenseForm, WishExpenseForm, SavingsInvestmentForm, BudgetForm, TransactionForm, ReminderForm
 from .models import IncomeSource, BasicExpense, WishExpense, SavingsInvestment, Budget, Transaction, Reminder
 from decimal import Decimal
-from datetime import date, timedeltafrom finance.load_categories import load_categories
+from finance import load_categories
 
 def home(request):
     return render(request, "finance/home.html")
@@ -17,8 +17,7 @@ def register(request):
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save()  
-            login(request, user)
-            load_categories(user)  
+            login(request, user) 
             return redirect('create_budget')  
     else:
         form = RegisterForm()  
@@ -26,65 +25,56 @@ def register(request):
 
 def income_form(request):
     if request.method == "POST":
-        form = IncomeForm(request.POST, user=request.user)
+        form = IncomeForm(request.POST)
         if form.is_valid():
             selected_income_sources = form.cleaned_data["income_sources"]
             for source in selected_income_sources:
                 IncomeSource.objects.get_or_create(user=request.user, name=source.name)
-            IncomeSource.objects.filter(user=request.user).exclude(id__in=selected_income_sources.values_list("id", flat=True)).delete()
-            income_source_ids = list(selected_income_sources.values_list("id", flat=True))
-            request.session["income_sources_ids"] = income_source_ids
             return redirect("basic_expense_form")
     else:
-        form = IncomeForm(user=request.user) 
+        form = IncomeForm()
     return render(request, "finance/income_form.html", {"form": form})
 
 
 def basic_expense_form(request):
     if request.method == "POST":
-        form = BasicExpenseForm(request.POST, user=request.user) 
+        form = BasicExpenseForm(request.POST) 
         if form.is_valid():
             selected_basic_expenses = form.cleaned_data["basic_expenses"]
             for expense in selected_basic_expenses:
                 BasicExpense.objects.get_or_create(user=request.user, name=expense.name)
-            BasicExpense.objects.filter(user=request.user).exclude(id__in=selected_basic_expenses.values_list("id", flat=True)).delete()
-            basic_expense_ids = list(selected_basic_expenses.values_list("id", flat=True))
-            request.session["basic_expense_ids"] = basic_expense_ids
             return redirect("wish_expense_form")
     else:
-        form = BasicExpenseForm(user=request.user)  
+        form = BasicExpenseForm()  
     return render(request, "finance/basic_expense_form.html", {"form": form})
 
 def wish_expense_form(request):
     if request.method == "POST":
-        form = WishExpenseForm(request.POST, user=request.user) 
+        form = WishExpenseForm(request.POST) 
         if form.is_valid():
             selected_wish_expenses = form.cleaned_data["wish_expenses"]
             for wish in selected_wish_expenses:
                 WishExpense.objects.get_or_create(user=request.user, name=wish.name)
-            WishExpense.objects.filter(user=request.user).exclude(id__in=selected_wish_expenses.values_list("id", flat=True)).delete()
-            wish_expense_ids = list(selected_wish_expenses.values_list("id", flat=True))
-            request.session["wish_expense_ids"] = wish_expense_ids
             return redirect("savings_investment_form")
     else:
-        form = WishExpenseForm(user=request.user)  
+        form = WishExpenseForm()  
     return render(request, "finance/wish_expense_form.html", {"form": form})
 
 
 def savings_investment_form(request):
     if request.method == "POST":
-        form = SavingsInvestmentForm(request.POST, user=request.user)
+        form = SavingsInvestmentForm(request.POST)
         if form.is_valid():
-            form.save(request.user)  
             selected_savings = form.cleaned_data["savings_investments"]
-            SavingsInvestment.objects.filter(user=request.user).exclude(id__in=selected_savings.values_list("id", flat=True)).delete()
-            return redirect("profile")
+            for investment in selected_savings:
+                SavingsInvestment.objects.get_or_create(user=request.user, name=investment.name)
+            return redirect("dashboard")
     else:
-        form = SavingsInvestmentForm(user=request.user)
+        form = SavingsInvestmentForm() 
     return render(request, "finance/savings_investment_form.html", {"form": form})
 
 @login_required
-def profile(request):
+def dashboard(request):
     
     user_budget = Budget.objects.filter(user=request.user).first()
     transactions = Transaction.objects.filter(user=request.user).order_by('-created_at')
@@ -103,7 +93,7 @@ def profile(request):
         available_for_wish_expenses = total_amount * Decimal('0.30')
         available_for_savings = total_amount * Decimal('0.20')
 
-    return render(request, "finance/profile.html", {
+    return render(request, "finance/dashboard.html", {
         "user_budget": user_budget,
         "transactions": transactions,
         "total_amount": total_amount,

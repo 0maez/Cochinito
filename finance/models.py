@@ -101,14 +101,6 @@ class Transaction(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        if not self.pk:  
-            if self.transaction_type == 'income':
-                if self.budget:  
-                    self.budget.update_balance_with_income(self.amount)
-            elif self.transaction_type == 'expense':
-                if self.budget:  
-                    self.budget.update_balance_with_expense(self.amount)
-
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -125,10 +117,6 @@ def update_budget_on_transaction(sender, instance, created, **kwargs):
             budget.current_balance -= instance.amount
 
         budget.save()
-
-from django.db import models
-from django.contrib.auth.models import User
-
 
 class Reminder(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE) 

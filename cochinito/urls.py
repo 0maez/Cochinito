@@ -31,7 +31,7 @@ urlpatterns = [
     path("finance/basic-expense-form/", views.basic_expense_form, name="basic_expense_form"),
     path("finance/wish-expense-form/", views.wish_expense_form, name="wish_expense_form"),
     path("finance/savings-investment-form/", views.savings_investment_form, name="savings_investment_form"),
-    path("finance/profile/", views.profile, name="profile"),
+    path("finance/dashboard/", views.dashboard, name="dashboard"),
     path("accounts/", include("django.contrib.auth.urls")),
     path('transaction/add/income/', IncomeCreateView.as_view(), name='add_income'),
     path('transaction/add/expense/', ExpenseCreateView.as_view(), name='add_expense'),

@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="container">
-    <h2>Profile</h2>
+    <h2>Dashboard</h2>
 
 
     <h3>Presupuesto Total</h3>
@@ -12,6 +12,23 @@
     <h3>Saldo Actual</h3>
     <p>{{ user_budget.current_balance|floatformat:2 }}</p>  
 
+    <h3>Recordatorios</h3>
+    <form method="POST" action="{% url 'mark_reminder_paid' %}">
+        {% csrf_token %}
+        <ul>
+            {% for reminder in reminders %}
+                <li>
+                    <label>
+                        <input type="checkbox" name="reminders" value="{{ reminder.id }}" {% if reminder.is_paid %}checked{% endif %}>
+                        {{ reminder.name }} - {{ reminder.date }}: {{ reminder.amount|floatformat:2 }}
+                    </label>
+                </li>
+            {% endfor %}
+        </ul>
+        <button type="submit" class="btn btn-success">Actualizar Recordatorios</button>
+    </form>
+<a href="{% url 'reminder_list' %}" class="btn btn-info" style="margin-bottom: 20px;">Ver todos los Recordatorios</a>
+<a href="{% url 'create_reminder' %}" class="btn btn-primary" style="margin-bottom: 20px;">Crear Recordatorio</a>
 
     <h3>Ingresos</h3>
     <ul>
@@ -53,3 +70,4 @@
 <a class="nav-link" href="{% url 'transaction_list' %}">Historial de Transacciones</a>
 
 {% endblock %}
+

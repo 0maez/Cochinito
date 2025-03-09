@@ -28,76 +28,44 @@ class RegisterForm(UserCreationForm):
 
 class IncomeForm(forms.Form):
     income_sources = forms.ModelMultipleChoiceField(
-        queryset=IncomeSource.objects.none(),  
+        queryset=IncomeSource.objects.filter(user__isnull=True),  # Mostrar todas las categorías
         widget=forms.CheckboxSelectMultiple,
         required=True
     )
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None) 
-        super().__init__(*args, **kwargs)
-        if user:
-            self.fields['income_sources'].queryset = IncomeSource.objects.filter(user=user)
+        super().__init__(*args, **kwargs)  # No necesitas el argumento 'user'
 
-    def save(self, user):
-        income_sources = self.cleaned_data['income_sources']
-        for source in income_sources:
-            IncomeSource.objects.get_or_create(user=user, name=source.name)
     
 class BasicExpenseForm(forms.Form):
     basic_expenses = forms.ModelMultipleChoiceField(
-        queryset=BasicExpense.objects.none(),  
+        queryset=BasicExpense.objects.filter(user__isnull=True),  
         widget=forms.CheckboxSelectMultiple,
         required=True
     )
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)  
         super().__init__(*args, **kwargs)
-        if user:
-            
-            self.fields['basic_expenses'].queryset = BasicExpense.objects.filter(user=user)
-
-    def save(self, user):
-        basic_expenses = self.cleaned_data['basic_expenses']
-        for expense in basic_expenses:
-            BasicExpense.objects.get_or_create(user=user, name=expense.name)
 
 class WishExpenseForm(forms.Form):
     wish_expenses = forms.ModelMultipleChoiceField(
-        queryset=WishExpense.objects.none(),  
+        queryset=WishExpense.objects.filter(user__isnull=True),  
         widget=forms.CheckboxSelectMultiple,
         required=True
     )
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)  
         super().__init__(*args, **kwargs)
-        if user:
-            self.fields['wish_expenses'].queryset = WishExpense.objects.filter(user=user)
-
-    def save(self, user):
-        wish_expenses = self.cleaned_data['wish_expenses']
-        for wish in wish_expenses:
-            WishExpense.objects.get_or_create(user=user, name=wish.name)
 
 class SavingsInvestmentForm(forms.Form):
     savings_investments = forms.ModelMultipleChoiceField(
-        queryset=SavingsInvestment.objects.none(),  
+        queryset=SavingsInvestment.objects.filter(user__isnull=True),  
         widget=forms.CheckboxSelectMultiple,
         required=True
     )
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)  
         super().__init__(*args, **kwargs)
-        if user:
-            self.fields['savings_investments'].queryset = SavingsInvestment.objects.filter(user=user)
-
-    def save(self, user):
-        savings_investments = self.cleaned_data['savings_investments']
-        for saving in savings_investments:
-            SavingsInvestment.objects.get_or_create(user=user, name=saving.name)
 
 class ProfileForm(forms.ModelForm):
     class Meta: 
@@ -134,12 +102,12 @@ class TransactionForm(forms.ModelForm):
         user = kwargs.pop('user', None) 
         super().__init__(*args, **kwargs)
         if self.transaction_type == 'income':
-            self.fields['income_source'].queryset = IncomeSource.objects.filter(user=user)
+            self.fields['income_source'].queryset = IncomeSource.objects.filter(user__isnull=True)
             self.fields['basic_expense'].widget = forms.HiddenInput()  
             self.fields['wish_expense'].widget = forms.HiddenInput() 
             self.fields['savings_investment'].widget = forms.HiddenInput()  
         elif self.transaction_type == 'expense':
-            self.fields['basic_expense'].queryset = BasicExpense.objects.filter(user=user)
-            self.fields['wish_expense'].queryset = WishExpense.objects.filter(user=user)
+            self.fields['basic_expense'].queryset = BasicExpense.objects.filter(user__isnull=True)
+            self.fields['wish_expense'].queryset = WishExpense.objects.filter(user__isnull=True)
             self.fields['income_source'].widget = forms.HiddenInput()  
             self.fields['savings_investment'].widget = forms.HiddenInput()  
