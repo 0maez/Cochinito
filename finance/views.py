@@ -3,13 +3,14 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
-from .forms import RegisterForm, IncomeForm, BasicExpenseForm, WishExpenseForm, SavingsInvestmentForm, BudgetForm, TransactionForm
-from .models import IncomeSource, BasicExpense, WishExpense, SavingsInvestment, Budget, Transaction
+from .forms import RegisterForm, IncomeForm, BasicExpenseForm, WishExpenseForm, SavingsInvestmentForm, BudgetForm, TransactionForm, ReminderForm
+from .models import IncomeSource, BasicExpense, WishExpense, SavingsInvestment, Budget, Transaction, Reminder
 from decimal import Decimal
-from finance.load_categories import load_categories
+from datetime import date, timedeltafrom finance.load_categories import load_categories
 
 def home(request):
     return render(request, "finance/home.html")
+
 
 def register(request):
     if request.method == 'POST':
@@ -37,6 +38,7 @@ def income_form(request):
     else:
         form = IncomeForm(user=request.user) 
     return render(request, "finance/income_form.html", {"form": form})
+
 
 def basic_expense_form(request):
     if request.method == "POST":
@@ -67,6 +69,7 @@ def wish_expense_form(request):
     else:
         form = WishExpenseForm(user=request.user)  
     return render(request, "finance/wish_expense_form.html", {"form": form})
+
 
 def savings_investment_form(request):
     if request.method == "POST":
@@ -121,11 +124,54 @@ def create_budget(request):
             budget = form.save(commit=False)
             budget.user = request.user
             budget.current_balance = budget.total_amount  
+            budget.current_balance = budget.total_amount  
             budget.save()
             return redirect('income_form')  
     else:
         form = BudgetForm()
     return render(request, 'finance/create_budget.html', {'form': form})
+
+
+@login_required
+def create_reminder(request):
+    if request.method == 'POST':
+        form = ReminderForm(request.POST)
+        if form.is_valid():
+            reminder = form.save(commit=False)
+            reminder.user = request.user
+            reminder.save()
+            return redirect('dashboard')  
+    else:
+        form = ReminderForm()
+    return render(request, 'finance/create_reminder.html', {'form': form})
+
+
+from django.shortcuts import render, redirect
+from .models import Reminder
+
+@login_required
+def mark_reminder_paid(request):
+    if request.method == 'POST':
+        reminder_ids = request.POST.getlist('reminder_ids')
+        for reminder_id in reminder_ids:
+            try:
+                reminder = Reminder.objects.get(id=reminder_id, user=request.user)
+                reminder.is_paid = True
+                reminder.save()
+            except Reminder.DoesNotExist:
+                pass
+    return redirect('reminder_list')  
+
+
+@login_required
+def reminder_list(request):
+
+    reminders = Reminder.objects.filter(user=request.user, is_paid=False).order_by('date')
+    context = {
+        'reminders': reminders,
+    }
+    return render(request, 'finance/reminder_list.html', context)
+
 
 class IncomeCreateView(CreateView):
     model = Transaction

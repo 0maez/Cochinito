@@ -44,6 +44,8 @@ class Budget(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)  
     current_balance = models.DecimalField(max_digits=10, decimal_places=2)  
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)  
+    current_balance = models.DecimalField(max_digits=10, decimal_places=2)  
     basic_expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     wish_expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     savings_investments = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -87,7 +89,7 @@ class Transaction(models.Model):
     )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     budget = models.ForeignKey(Budget, on_delete=models.CASCADE)
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, default="Sin nombre")
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPES)
     description = models.TextField(blank=True, null=True)  
@@ -123,6 +125,22 @@ def update_budget_on_transaction(sender, instance, created, **kwargs):
             budget.current_balance -= instance.amount
 
         budget.save()
+
+from django.db import models
+from django.contrib.auth.models import User
+
+
+class Reminder(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE) 
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    date = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_paid = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.name} - {self.date}"
         
 class Resource(models.Model):
     title = models.CharField(max_length=200)
