@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.db.models import Sum
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE,)
@@ -42,10 +43,8 @@ class SavingsInvestment(models.Model):
 
 class Budget(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2)  
-    current_balance = models.DecimalField(max_digits=10, decimal_places=2)  
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2)  
-    current_balance = models.DecimalField(max_digits=10, decimal_places=2)  
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)  # Presupuesto inicial
+    current_balance = models.DecimalField(max_digits=10, decimal_places=2)  # Saldo actual
     basic_expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     wish_expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     savings_investments = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -53,16 +52,18 @@ class Budget(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        total_amount = Decimal(self.total_amount)
-        
+        total = Decimal(self.total_amount)
         if self.current_balance is None:
-            self.current_balance = total_amount
-        self.basic_expenses = total_amount * Decimal('0.5')
-        self.wish_expenses = total_amount * Decimal('0.3')
-        self.savings_investments = total_amount * Decimal('0.2')
+            self.current_balance = total
 
-        if self.current_balance <= total_amount * Decimal('0.15'):
-            print(f"⚠️ Alerta: Tu saldo está por debajo del 15% del presupuesto inicial ({total_amount * Decimal('0.15'):.2f})")
+        # Asignar las proporciones fijas
+        self.basic_expenses = total * Decimal('0.5')
+        self.wish_expenses = total * Decimal('0.3')
+        self.savings_investments = total * Decimal('0.2')
+
+        # Alerta de saldo bajo (imprime en consola; la lógica de envío de correo se hace en el comando)
+        if self.current_balance <= total * Decimal('0.15'):
+            print(f"⚠️ Alerta: Tu saldo está por debajo del 15% del presupuesto inicial ({total * Decimal('0.15'):.2f})")
 
         super().save(*args, **kwargs)
 
@@ -78,6 +79,42 @@ class Budget(models.Model):
     def is_balance_low(self):
         threshold = self.total_amount * Decimal('0.15')
         return self.current_balance <= threshold
+    
+    def total_basic_spent(self):
+        return sum(t.amount for t in self.transaction_set.filter(basic_expense__isnull=False))
+
+    def total_wish_spent(self):
+        return sum(t.amount for t in self.transaction_set.filter(wish_expense__isnull=False))
+
+    @property
+    def available_basic(self):
+        # Suma de todos los gastos básicos (se asume que en Transaction.category se guarda 'basic')
+        basic_spent = self.transaction_set.filter(
+            transaction_type='expense',
+            category__iexact='basic'
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        allocated = self.total_amount * Decimal('0.5')
+        return allocated - basic_spent
+
+    @property
+    def available_wish(self):
+        # Gastos de deseo (se asume 'desire')
+        wish_spent = self.transaction_set.filter(
+            transaction_type='expense',
+            category__iexact='desire'
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        allocated = self.total_amount * Decimal('0.3')
+        return allocated - wish_spent
+
+    @property
+    def available_savings(self):
+        # Ahorros (se asume 'savings')
+        savings_spent = self.transaction_set.filter(
+            transaction_type='expense',
+            category__iexact='savings'
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        allocated = self.total_amount * Decimal('0.2')
+        return allocated - savings_spent
 
     def __str__(self):
         return f"Presupuesto de {self.user.username}: {self.total_amount}"

@@ -75,36 +75,66 @@ def savings_investment_form(request):
 
 @login_required
 def dashboard(request):
-    
+    # Obtenemos el presupuesto del usuario
     user_budget = Budget.objects.filter(user=request.user).first()
     transactions = Transaction.objects.filter(user=request.user).order_by('-created_at')
     income_sources = IncomeSource.objects.filter(user=request.user)
-    basic_expenses = BasicExpense.objects.filter(user=request.user)
-    wish_expenses = WishExpense.objects.filter(user=request.user)
-    savings_investments = SavingsInvestment.objects.filter(user=request.user)
+    reminders = Reminder.objects.filter(user=request.user, is_paid=False)
+
+    # Filtramos las transacciones (NO los modelos de gasto)
+    basic_expenses = Transaction.objects.filter(user=request.user, basic_expense__isnull=False)
+    wish_expenses = Transaction.objects.filter(user=request.user, wish_expense__isnull=False)
+    savings_investments = Transaction.objects.filter(user=request.user, savings_investment__isnull=False)
+
+    # Inicializamos variables
     available_for_basic_expenses = Decimal(0)
     available_for_wish_expenses = Decimal(0)
     available_for_savings = Decimal(0)
+    spent_on_basic = Decimal(0)
+    spent_on_wish = Decimal(0)
     total_amount = Decimal(0)
 
+    # Si el usuario tiene presupuesto, calculamos los saldos disponibles
     if user_budget:
         total_amount = user_budget.total_amount
-        available_for_basic_expenses = total_amount * Decimal('0.50')
-        available_for_wish_expenses = total_amount * Decimal('0.30')
-        available_for_savings = total_amount * Decimal('0.20')
+        available_for_basic_expenses = user_budget.basic_expenses - sum(expense.amount for expense in basic_expenses)
+        available_for_wish_expenses = user_budget.wish_expenses - sum(expense.amount for expense in wish_expenses)
+        available_for_savings = user_budget.savings_investments
 
-    return render(request, "finance/dashboard.html", {
+        # Calculamos cuánto han gastado en cada categoría
+        spent_on_basic = sum(expense.amount for expense in basic_expenses)
+        spent_on_wish = sum(expense.amount for expense in wish_expenses)
+
+    # Calculamos el porcentaje gastado en cada categoría
+    percentage_basic = (spent_on_basic / user_budget.basic_expenses) * 100 if user_budget.basic_expenses > 0 else 0
+    percentage_wish = (spent_on_wish / user_budget.wish_expenses) * 100 if user_budget.wish_expenses > 0 else 0
+
+    # Calculamos si el saldo ha bajado del 20% del total
+    is_balance_low = user_budget.current_balance <= (user_budget.total_amount * Decimal('0.20'))
+
+    # Verificamos si ha excedido el 50% o 30%
+    exceeded_basic = available_for_basic_expenses < 0
+    exceeded_wish = available_for_wish_expenses < 0
+
+    context = {
         "user_budget": user_budget,
         "transactions": transactions,
         "total_amount": total_amount,
         "available_for_basic_expenses": available_for_basic_expenses,
         "available_for_wish_expenses": available_for_wish_expenses,
         "available_for_savings": available_for_savings,
-        "income_sources": income_sources,  
-        "basic_expenses": basic_expenses, 
-        "wish_expenses": wish_expenses,  
-        "savings_investments": savings_investments,  
-    })
+        "income_sources": income_sources,
+        "basic_expenses": basic_expenses,
+        "wish_expenses": wish_expenses,
+        "savings_investments": savings_investments,
+        "reminders": reminders,
+        "percentage_basic": percentage_basic,
+        "percentage_wish": percentage_wish,
+        "is_balance_low": is_balance_low,
+        "exceeded_basic": exceeded_basic,
+        "exceeded_wish": exceeded_wish,
+    }
+    return render(request, "finance/dashboard.html", context)
 
 @login_required
 def create_budget(request):
