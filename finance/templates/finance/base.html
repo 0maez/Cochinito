@@ -1,24 +1,109 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cochinito - Finanzas Personales</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>{% block title %}AlcanciaApp - Finanzas{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/forms@0.5.2/dist/forms.min.js"></script>
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}">Cochinito</a>
-            <a href="{% url 'logout' %}">Cerrar sesión</a>
+<body class="bg-gray-100">
+
+    <!-- Navbar -->
+    <nav class="bg-white p-4 shadow-md border-b border-gray-200">
+        <div class="container mx-auto flex justify-between items-center">
+            
+            <!-- Logo -->
+            <div class="flex items-center space-x-3">
+                <a href="/">
+                    <img src="{% static 'finance/images/logo.png' %}" alt="AlcanciaApp Logo" class="h-10">
+                </a>
+                <span class="text-xl font-semibold text-[#4b7f8c]">AlcanciaApp</span>
+            </div>
+
+            <!-- Menú para escritorio -->
+            <div class="hidden md:flex space-x-4">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="text-green-600 hover:text-green-800">Mis finanzas</a>
+                    <a href="/transactions/" class="text-gray-700 hover:text-[#4b7f8c]">Historial de Transacciones</a>
+                    <a href="/reminders/" class="text-gray-700 hover:text-[#4b7f8c]">Recordatorios</a>
+                    <a href="/finance/summary" class="text-gray-700 hover:text-[#4b7f8c]">Resumen</a>
+                    <a href="/finance/education" class="text-gray-700 hover:text-[#4b7f8c]">Educación financiera</a>
+                    
+                    <form action="{% url 'logout' %}" method="POST" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-gray-500 text-white py-2 px-4 rounded-full hover:bg-gray-700">
+                            Cerrar sesión
+                        </button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'home' %}" class="text-gray-700 hover:text-[#4b7f8c]">Inicio</a>
+                    <a href="{% url 'about_us' %}" class="text-gray-700 hover:text-[#4b7f8c]">Sobre Nosotros</a>
+                    <a href="{% url 'features' %}" class="text-gray-700 hover:text-[#4b7f8c]">Características</a>                    
+                    <a href="{% url 'login' %}" class="bg-[#abebc6] text-gray-900 py-2 px-4 rounded-full hover:bg-[#89cfa8]">
+                        Iniciar sesión
+                    </a>
+                {% endif %}
+            </div>
+
+            <!-- Botón del menú hamburguesa -->
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M4 6h16M4 12h16m-7 6h7" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Menú hamburguesa para móviles -->
+        <div id="mobile-menu" class="hidden md:hidden flex flex-col space-y-2 mt-4 bg-white border-t border-gray-200 shadow-lg p-4">
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="text-green-600 hover:text-green-800">Mis finanzas</a>
+                <a href="/transactions/" class="text-gray-700 hover:text-[#4b7f8c]">Historial de Transacciones</a>
+                <a href="/reminders/" class="text-gray-700 hover:text-[#4b7f8c]">Recordatorios</a>
+                <a href="/finance/summary" class="text-gray-700 hover:text-[#4b7f8c]">Resumen</a>
+                <a href="/finance/education" class="text-gray-700 hover:text-[#4b7f8c]">Educación financiera</a>
+                
+                <form action="{% url 'logout' %}" method="POST" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="bg-gray-500 text-white py-2 px-4 rounded-full hover:bg-gray-700 w-full">
+                        Cerrar sesión
+                    </button>
+                </form>
+            {% else %}
+                <a href="{% url 'home' %}" class="text-gray-700 hover:text-[#4b7f8c]">Inicio</a>
+                <a href="{% url 'about_us' %}" class="text-gray-700 hover:text-[#4b7f8c]">Sobre Nosotros</a>
+                <a href="{% url 'features' %}" class="text-gray-700 hover:text-[#4b7f8c]">Características</a>
+
+                <a href="{% url 'login' %}" class="bg-[#abebc6] text-gray-900 py-2 px-4 rounded-full hover:bg-[#89cfa8] w-full text-center">
+                    Iniciar sesión
+                </a>
+            {% endif %}
         </div>
     </nav>
 
-    <div class="container mt-4">
-        {% block content %}
-        {% endblock %}
+    <!-- Content -->
+    <div class="container mx-auto mt-8">
+        {% block content %}{% endblock %}
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-center text-white py-4 mt-8">
+        <p>&copy; 2025 AlcanciaApp - Finanzas Personales para Estudiantes</p>
+    </footer>
+
+    <!-- Script para abrir/cerrar el menú hamburguesa -->
+    <script>
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+    </script>
+
 </body>
 </html>

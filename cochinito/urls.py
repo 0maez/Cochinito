@@ -25,7 +25,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('finance.urls')),
     path("accounts/login/", auth_views.LoginView.as_view(), name='login'),
-    path("accounts/logout/", auth_views.LoginView.as_view(), name='logout'), 
+    # Asegúrate de usar LogoutView para el cierre de sesión
+    path("accounts/logout/", auth_views.LogoutView.as_view(), name='logout'),  
     path("finance/register/", views.register, name="register"),
     path("finance/income-form/", views.income_form, name="income_form"),
     path("finance/basic-expense-form/", views.basic_expense_form, name="basic_expense_form"),
@@ -37,9 +38,5 @@ urlpatterns = [
     path('transaction/add/expense/', ExpenseCreateView.as_view(), name='add_expense'),
     path('transactions/', TransactionListView.as_view(), name='transaction_list'),
     path('transactions/update/<int:pk>/', TransactionUpdateView.as_view(), name='update_transaction'),
-    path('transactions/delete/<int:pk>/', TransactionDeleteView.as_view(), name='delete_transaction'), 
+    path('transactions/delete/<int:pk>/', TransactionDeleteView.as_view(), name='delete_transaction'),
 ]
-
-
-
-

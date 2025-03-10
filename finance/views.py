@@ -263,3 +263,9 @@ class TransactionDeleteView(DeleteView):
 
     def get_queryset(self):
         return Transaction.objects.filter(user=self.request.user)
+    
+def about_us(request):
+    return render(request, 'finance/about_us.html')
+
+def features(request):
+    return render(request, 'finance/features.html')

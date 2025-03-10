@@ -1,15 +1,141 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Página de Inicio</title>
-</head>
-<body>
-    <h1>Bienvenido a la Página de Inicio</h1>
-    <p>Este es un placeholder para probar el funcionamiento.</p>
-    <nav>
-        <a href="{% url 'register' %}">Registro</a> |
-        <a href="{% url 'login' %}">Iniciar Sesión</a> |
-    </nav>
-</body>
-</html>
+{% extends "finance/base.html" %}
+
+{% block title %}AlcanciaApp - Inicio{% endblock %}
+
+{% block content %}
+{% load static %}
+<!-- Hero Section -->
+<section class="relative bg-[#abebc6] text-white py-24 overflow-hidden rounded-xl shadow-lg mx-4 md:mx-0">
+    <!-- Imagen de fondo -->
+    <div class="absolute inset-0 rounded-xl opacity-15"
+         style="background-image: url('{% static 'images/hero-image.jpg' %}');
+                background-size: cover;
+                background-position: center;
+                filter: brightness(0.8);
+                z-index: 2;">
+    </div>
+
+    <!-- Degradado sutil con transparencia -->
+    <div class="absolute inset-0 bg-gradient-to-r from-[#abebc6] via-[#7acdaf] to-[#4b7f8c] rounded-xl">
+    </div>
+
+    <!-- Contenido principal -->
+    <div class="relative z-10 container mx-auto text-center">
+        <h1 class="text-5xl font-bold leading-tight mb-4">Controla tus Finanzas Personales</h1>
+        <p class="text-lg max-w-xl mx-auto mb-6">
+            Simplifica el manejo de tus ingresos, gastos y ahorros. Con AlcanciaApp, llevar el control financiero nunca fue tan fácil.
+        </p>
+        <div class="flex justify-center space-x-4">
+            <a href="{% url 'register' %}" class="bg-white text-[#4b7f8c] px-6 py-3 rounded-full text-lg font-semibold hover:bg-[#e0f7e9] transition duration-300 transform hover:scale-105">
+                Crear una Cuenta
+            </a>
+            <a href="{% url 'login' %}" class="bg-[#4b7f8c] text-white px-6 py-3 rounded-full text-lg font-semibold hover:bg-[#355f6c] transition duration-300 transform hover:scale-105">
+                Iniciar Sesión
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section class="rounded-xl py-16 bg-white">
+    <div class="container mx-auto text-center">
+        <h2 class="text-3xl font-semibold mb-8 text-gray-800">¿Por qué elegir AlcanciaApp?</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Feature 1 -->
+            <div class="bg-gray-100 p-6 rounded-2xl shadow-lg hover:shadow-xl transition duration-300 transform hover:scale-105">
+                <h3 class="text-xl font-bold mb-4 text-[#4b7f8c]">💰 Control de Finanzas</h3>
+                <p class="text-gray-600">Registra tus ingresos, gastos y ahorros de forma sencilla.</p>
+            </div>
+            <!-- Feature 2 -->
+            <div class="bg-gray-100 p-6 rounded-2xl shadow-lg hover:shadow-xl transition duration-300 transform hover:scale-105">
+                <h3 class="text-xl font-bold mb-4 text-[#4b7f8c]">⏰ Recordatorios</h3>
+                <p class="text-gray-600">Recibe alertas automáticas para no olvidar tus pagos importantes.</p>
+            </div>
+            <!-- Feature 3 -->
+            <div class="bg-gray-100 p-6 rounded-2xl shadow-lg hover:shadow-xl transition duration-300 transform hover:scale-105">
+                <h3 class="text-xl font-bold mb-4 text-[#4b7f8c]">📚 Educación Financiera</h3>
+                <p class="text-gray-600">Aprende a manejar mejor tu dinero con nuestra sección educativa.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="rounded-xl bg-gray-100 py-16">
+    <div class="container mx-auto text-center">
+        <h2 class="text-3xl font-semibold mb-8 text-gray-800">¿Cómo funciona?</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Step 1 -->
+            <div class="p-6 bg-white rounded-2xl shadow-md hover:shadow-xl transition duration-300 transform hover:scale-105">
+                <h3 class="text-lg font-bold mb-2 text-[#4b7f8c]">1. Regístrate</h3>
+                <p class="text-gray-600">Crea una cuenta gratuita para empezar a controlar tus finanzas.</p>
+            </div>
+            <!-- Step 2 -->
+            <div class="p-6 bg-white rounded-2xl shadow-md hover:shadow-xl transition duration-300 transform hover:scale-105">
+                <h3 class="text-lg font-bold mb-2 text-[#4b7f8c]">2. Registra tus movimientos</h3>
+                <p class="text-gray-600">Agrega tus ingresos, gastos y categorías personalizadas.</p>
+            </div>
+            <!-- Step 3 -->
+            <div class="p-6 bg-white rounded-2xl shadow-md hover:shadow-xl transition duration-300 transform hover:scale-105">
+                <h3 class="text-lg font-bold mb-2 text-[#4b7f8c]">3. Mantén el control</h3>
+                <p class="text-gray-600">Recibe recordatorios y visualiza tu historial financiero.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="rounded-xl bg-[#f9f9f9] py-16">
+    <div class="container mx-auto text-center">
+        <h2 class="text-3xl font-semibold mb-8 text-gray-800">Estadísticas</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Stat 1 -->
+            <div class="p-4 bg-white rounded-2xl shadow-md">
+                <h3 class="text-4xl font-bold text-[#4b7f8c]">+500</h3>
+                <p class="text-gray-600">Usuarios Registrados</p>
+            </div>
+            <!-- Stat 2 -->
+            <div class="p-4 bg-white rounded-2xl shadow-md">
+                <h3 class="text-4xl font-bold text-[#4b7f8c]">$100,000+</h3>
+                <p class="text-gray-600">Ingresos Registrados</p>
+            </div>
+            <!-- Stat 3 -->
+            <div class="p-4 bg-white rounded-2xl shadow-md">
+                <h3 class="text-4xl font-bold text-[#4b7f8c]">95%</h3>
+                <p class="text-gray-600">Satisfacción de los Usuarios</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="relative bg-[#abebc6] text-white py-16 rounded-2xl mt-8 overflow-hidden shadow-lg mx-4 md:mx-0">
+    <!-- Imagen de fondo -->
+    <div class="absolute inset-0 rounded-2xl opacity-15"
+         style="background-image: url('{% static 'images/hero-image.jpg' %}');
+                background-size: cover;
+                background-position: center;
+                filter: brightness(0.8);
+                z-index: 2;">
+    </div>
+
+    <!-- Degradado sutil con transparencia -->
+    <div class="absolute inset-0 bg-gradient-to-r from-[#abebc6] via-[#7acdaf] to-[#4b7f8c] opacity-70 rounded-2xl">
+    </div>
+
+    <!-- Contenido principal -->
+    <div class="relative z-10 container mx-auto text-center">
+        <h2 class="text-3xl font-bold mb-4 text-white transition-all duration-300 transform hover:scale-105 ">
+            ¿Listo para tomar control de tus finanzas?
+        </h2>
+        <p class="text-lg mb-6 text-gray-100 max-w-xl mx-auto">
+            Empieza ahora mismo de forma gratuita y organiza tus gastos, ingresos y metas financieras.
+        </p>
+        <a href="{% url 'register' %}"
+           class="bg-white text-[#4b7f8c] px-8 py-3 rounded-full text-xl font-semibold 
+                  hover:bg-[#e0f7e9] transition duration-300 transform hover:scale-110 shadow-lg">
+            Crear Cuenta
+        </a>
+    </div>
+</section>
+{% endblock %}
