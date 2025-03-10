@@ -1,12 +1,33 @@
 {% extends "finance/base.html" %}
+
 {% block content %}
-<div class="container">
-    <h2>Gastos de Deseos</h2>
-    <p>Selecciona tus gastos del 30% (puedes elegir más de una):</p>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.wish_expenses }}
-        <button type="submit" class="btn btn-primary">Siguiente</button>
-    </form>
+<div class="min-h-screen flex items-center justify-center bg-[#f0f4f8]">
+    <div class="bg-white p-8 rounded-2xl shadow-xl max-w-lg w-full transition-all duration-300 transform hover:scale-105">
+        <h2 class="text-2xl font-semibold text-center text-[#4b7f8c] mb-4">Gastos de Deseos</h2>
+        <p class="text-center text-gray-600 mb-6">
+            Selecciona tus gastos del 30% (puedes elegir más de una):
+        </p>
+
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+
+            <!-- Opciones de gastos -->
+            <div class="grid grid-cols-1 gap-4">
+                {% for checkbox in form.wish_expenses %}
+                <div class="border rounded-lg p-3 flex items-center space-x-3 bg-gray-50 hover:bg-[#f0f4f8] transition-all duration-300">
+                    {{ checkbox.tag }}
+                    <label class="text-[#4b7f8c] font-medium">{{ checkbox.choice_label }}</label>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Botón de siguiente -->
+            <button type="submit"
+                    class="w-full bg-[#abebc6] text-white font-semibold py-3 rounded-lg 
+                           hover:bg-[#7acdaf] transition-all duration-300 transform hover:scale-105">
+                Siguiente
+            </button>
+        </form>
+    </div>
 </div>
 {% endblock %}

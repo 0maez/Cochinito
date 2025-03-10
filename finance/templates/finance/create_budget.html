@@ -1,9 +1,28 @@
 {% extends "finance/base.html" %}
+
 {% block content %}
-<h2>Introduce tu presupuesto inicial</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Guardar presupuesto</button>
-</form>
+<div class="min-h-screen flex flex-col justify-between bg-[#f0f4f8]">
+    <div class="flex-grow flex items-center justify-center">
+        <div class="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full transition-all duration-300 transform hover:scale-105">
+            <h2 class="text-2xl font-semibold text-center text-[#4b7f8c] mb-6">Introduce tu presupuesto inicial</h2>
+            
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Presupuesto -->
+                <div class="space-y-1">
+                    {{ form.as_p }}
+                </div>
+                
+                <!-- Botón de enviar -->
+                <div class="pt-4">
+                    <button type="submit" class="w-full bg-[#abebc6] text-white font-semibold py-3 rounded-lg hover:bg-[#7acdaf] transition-all duration-300 transform hover:scale-105">
+                        Guardar presupuesto
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+</div>
 {% endblock %}

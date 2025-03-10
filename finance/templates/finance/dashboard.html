@@ -41,15 +41,27 @@
                     </li>
                     {% endfor %}
                 </ul>
-                <button type="submit" class="w-full bg-blue-600 text-white py-2 mt-4 rounded-lg hover:bg-blue-700 transition-all">Marcar como Pagado</button>
+                <button type="submit" class="bg-[#abebc6] text-[#2c6d5b] py-2 px-6 mt-4 rounded-md hover:bg-[#9de6a1] transition-all">
+                    Marcar como Pagado
+                </button>
             </form>
         {% else %}
         <p class="text-gray-600">No hay recordatorios pendientes.</p>
         {% endif %}
         <div class="mt-4 flex justify-between">
             <a href="{% url 'reminder_list' %}" class="bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-gray-700">Ver todos</a>
-            <a href="{% url 'create_reminder' %}" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700">Crear Nuevo</a>
+            <a href="{% url 'create_reminder' %}" class="bg-[#abebc6] text-gray-800 px-6 py-3 rounded-lg hover:bg-teal-200">Crear Nuevo</a>
         </div>
+    </div>
+
+    <!-- Cuadro Ingresos -->
+    <div class="bg-white shadow-lg rounded-lg p-6 mb-6">
+        <h3 class="text-lg font-bold text-gray-800">Ingresos</h3>
+        <ul>
+            {% for source in income_sources %}
+                <li>{{ source.name }}: ${{ source.amount|floatformat:2 }}</li>
+            {% endfor %}
+        </ul>
     </div>
 
     <!-- Cuadro Gastos Básicos -->
@@ -71,7 +83,7 @@
             <div class="mb-2">
                 <div class="flex mb-2">
                     <div class="w-full bg-gray-200 rounded-full h-2.5">
-                        <div class="bg-green-600 h-2.5 rounded-full" style="width: {{ percentage_basic }}%;"></div>
+                        <div class="bg-[#abebc6] h-2.5 rounded-full" style="width: {{ percentage_basic }}%;"></div>
                     </div>
                 </div>
             </div>
@@ -103,7 +115,7 @@
             <div class="mb-2">
                 <div class="flex mb-2">
                     <div class="w-full bg-gray-200 rounded-full h-2.5">
-                        <div class="bg-yellow-600 h-2.5 rounded-full" style="width: {{ percentage_wish }}%;"></div>
+                        <div class="bg-[#abebc6] h-2.5 rounded-full" style="width: {{ percentage_wish }}%;"></div>
                     </div>
                 </div>
             </div>
@@ -118,8 +130,13 @@
 
     <!-- Cuadro Ahorros e Inversiones -->
     <div class="bg-white shadow-lg rounded-lg p-6 mb-6">
-        <h4 class="text-lg font-bold text-gray-800">Ahorros e Inversiones (20%)</h4>
+        <h3 class="text-lg font-bold text-gray-800">Ahorros e Inversiones (20%)</h3>
         <p class="text-gray-700"><strong>Disponible:</strong> ${{ available_for_savings|floatformat:2 }}</p>
+        <ul>
+            {% for saving in savings_investments %}
+                <li>{{ saving.name }}: ${{ saving.amount|floatformat:2 }}</li>
+            {% endfor %}
+        </ul>
 
         <!-- Barra de Progreso -->
         <div class="relative pt-1">
@@ -134,18 +151,24 @@
             <div class="mb-2">
                 <div class="flex mb-2">
                     <div class="w-full bg-gray-200 rounded-full h-2.5">
-                        <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ percentage_savings }}%;"></div>
+                        <div class="bg-[#abebc6] h-2.5 rounded-full" style="width: {{ percentage_savings }}%;"></div>
                     </div>
                 </div>
             </div>
         </div>
+
+        {% if exceeded_savings %}
+        <div class="mt-3 bg-yellow-100 p-3 text-yellow-600 rounded-lg">
+            <i class="bi bi-exclamation-triangle"></i> Has excedido el presupuesto del 20% para ahorros e inversiones.
+        </div>
+        {% endif %}
     </div>
 
     <!-- Botones de Acción -->
     <div class="mt-5 flex justify-between">
         <a href="{% url 'add_income' %}" class="bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-gray-700">Agregar Ingreso</a>
         <a href="{% url 'add_expense' %}" class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700">Agregar Gasto</a>
-        <a href="{% url 'transaction_list' %}" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">Historial</a>
+        <a href="{% url 'transaction_list' %}" class="bg-[#abebc6] text-gray-800 px-6 py-3 rounded-lg hover:bg-teal-200">Historial</a>
     </div>
 </div>
 {% endblock %}

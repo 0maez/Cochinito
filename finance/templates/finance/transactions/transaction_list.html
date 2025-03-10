@@ -25,10 +25,10 @@
                     <td class="px-6 py-4 text-sm text-gray-700">{{ transaction.created_at|date:"d/m/Y H:i" }}</td>
                     <td class="px-6 py-4 text-sm text-gray-700">{{ transaction.get_transaction_type_display }}</td>
                     <td class="px-6 py-4 text-sm text-gray-700">{{ transaction.name }}</td>
-                    <td class="px-6 py-4 text-sm text-gray-700">{{ transaction.amount }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-700">{{ transaction.amount|floatformat:2 }}</td>
                     <td class="px-6 py-4 text-sm text-gray-700">{{ transaction.category }}</td>
                     <td class="px-6 py-4 text-sm">
-                        <a href="{% url 'update_transaction' transaction.id %}" class="bg-yellow-500 text-white px-4 py-2 rounded-full text-xs hover:bg-yellow-600 transition duration-300">Editar</a>
+                        <a href="{% url 'update_transaction' transaction.id %}" class="bg-[#abebc6] text-[#4b7f8c] px-4 py-2 rounded-full text-xs hover:bg-[#90d8a6] transition duration-300">Editar</a>
                         <a href="{% url 'delete_transaction' transaction.id %}" class="bg-red-500 text-white px-4 py-2 rounded-full text-xs hover:bg-red-600 transition duration-300 ml-2">Eliminar</a>
                     </td>
                 </tr>
@@ -42,8 +42,8 @@
     </div>
 
     <div class="mt-8 flex space-x-6 justify-center">
-        <a href="{% url 'add_income' %}" class="bg-green-600 text-white px-8 py-3 rounded-full hover:bg-green-700 text-lg transition duration-300">Agregar Ingreso</a>
-        <a href="{% url 'add_expense' %}" class="bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 text-lg transition duration-300">Agregar Gasto</a>
+        <a href="{% url 'add_income' %}" class="bg-[#4b7f8c] text-white px-8 py-3 rounded-full hover:bg-[#3b6f73] text-lg transition duration-300">Agregar Ingreso</a>
+        <a href="{% url 'add_expense' %}" class="bg-[#abebc6] text-[#4b7f8c] px-8 py-3 rounded-full hover:bg-[#90d8a6] text-lg transition duration-300">Agregar Gasto</a>
     </div>
 </div>
 {% endblock %}

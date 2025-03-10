@@ -21,7 +21,7 @@
     },
     {
         "model": "finance.IncomeSource",
-        "fields": {"name": "Freelance"}
+        "fields": {"name": "Trabajo Remoto"}
     },
     {
         "model": "finance.IncomeSource",

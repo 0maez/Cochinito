@@ -2,23 +2,23 @@
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
-    <h2 class="text-2xl font-semibold text-[#4b7f8c] mb-4">Mis Recordatorios</h2>
+    <h2 class="text-3xl font-semibold text-[#4b7f8c] mb-6">Mis Recordatorios</h2>
     
-    <form method="POST" action="{% url 'mark_reminder_paid' %}" class="bg-white p-6 rounded-lg shadow-md">
+    <form method="POST" action="{% url 'mark_reminder_paid' %}" class="bg-white p-6 rounded-lg shadow-xl">
         {% csrf_token %}
-        <ul class="space-y-4">
+        <ul class="space-y-6">
             {% for reminder in reminders %}
                 <li class="flex items-center justify-between border-b pb-4 mb-4">
-                    <div>
-                        <label class="flex items-center space-x-3">
-                            <input type="checkbox" name="reminder_ids" value="{{ reminder.id }}" class="form-checkbox text-[#4b7f8c]">
-                            <strong class="text-lg font-medium">{{ reminder.name }}</strong>
+                    <div class="flex-1">
+                        <label class="flex items-center space-x-4">
+                            <input type="checkbox" name="reminder_ids" value="{{ reminder.id }}" class="form-checkbox text-[#4b7f8c] focus:ring-[#4b7f8c]">
+                            <strong class="text-lg font-semibold text-[#4b7f8c]">{{ reminder.name }}</strong>
                         </label>
-                        <p class="text-gray-600 mt-2">{{ reminder.description }}</p>
+                        <p class="text-gray-600 mt-2 text-base">{{ reminder.description }}</p>
                     </div>
                     <div class="text-right text-sm text-gray-500">
                         <p>{{ reminder.date|date:"d/m/Y" }}</p>
-                        <p class="font-semibold text-[#4b7f8c]">${{ reminder.amount|floatformat:2 }}</p>
+                        <p class="font-semibold text-[#4b7f8c] text-xl">${{ reminder.amount|floatformat:2 }}</p>
                     </div>
                 </li>
             {% empty %}
@@ -26,11 +26,11 @@
             {% endfor %}
         </ul>
         
-        <div class="flex justify-between mt-6">
-            <button type="submit" class="bg-[#4b7f8c] text-white py-2 px-4 rounded-md hover:bg-[#3a6c6f] focus:outline-none focus:ring-2 focus:ring-[#4b7f8c]">
+        <div class="flex justify-between mt-8">
+            <button type="submit" class="bg-[#4b7f8c] text-white py-2 px-6 rounded-md hover:bg-[#3a6c6f] focus:outline-none focus:ring-2 focus:ring-[#4b7f8c] transition duration-300">
                 Marcar como pagados
             </button>
-            <a href="{% url 'create_reminder' %}" class="bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500">
+            <a href="{% url 'create_reminder' %}" class="bg-[#abebc6] text-[#4b7f8c] py-2 px-6 rounded-md hover:bg-teal-200 focus:outline-none focus:ring-2 focus:ring-[#4b7f8c] transition duration-300">
                 Añadir Recordatorio
             </a>
         </div>

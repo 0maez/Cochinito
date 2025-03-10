@@ -1,10 +1,79 @@
 {% extends "finance/base.html" %}
 
 {% block content %}
-<h2>Nuevo recordatorio de pago</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Guardar recordatorio</button>
-</form>
+<div class="container mx-auto px-6 py-8">
+    <div class="bg-white p-8 rounded-lg shadow-xl">
+        <h2 class="text-3xl font-semibold text-[#4b7f8c] mb-6">Nuevo Recordatorio de Pago</h2>
+
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="mb-6">
+                <label for="{{ form.name.id_for_label }}" class="text-lg font-medium text-[#4b7f8c]">{{ form.name.label }}</label>
+                <div class="mt-2">
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                        <div class="text-red-500 text-sm mt-2">{{ form.name.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <label for="{{ form.description.id_for_label }}" class="text-lg font-medium text-[#4b7f8c]">{{ form.description.label }}</label>
+                <div class="mt-2">
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <div class="text-red-500 text-sm mt-2">{{ form.description.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <label for="{{ form.amount.id_for_label }}" class="text-lg font-medium text-[#4b7f8c]">{{ form.amount.label }}</label>
+                <div class="mt-2">
+                    {{ form.amount }}
+                    {% if form.amount.errors %}
+                        <div class="text-red-500 text-sm mt-2">{{ form.amount.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <label for="{{ form.date.id_for_label }}" class="text-lg font-medium text-[#4b7f8c]">{{ form.date.label }}</label>
+                <div class="mt-2">
+                    {{ form.date }}
+                    {% if form.date.errors %}
+                        <div class="text-red-500 text-sm mt-2">{{ form.date.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="flex justify-between mt-8">
+                <button type="submit" class="bg-[#4b7f8c] text-white py-2 px-6 rounded-md hover:bg-[#3a6c6f] focus:outline-none focus:ring-2 focus:ring-[#4b7f8c] transition duration-300">
+                    Guardar Recordatorio
+                </button>
+                <a href="{% url 'dashboard' %}" class="bg-gray-400 text-white py-2 px-6 rounded-md hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400 transition duration-300">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    input, select, textarea {
+        border: 2px solid #abebc6;
+        border-radius: 8px;
+        padding: 0.75rem;
+        font-size: 1rem;
+        width: 100%;
+        transition: border-color 0.3s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+        border-color: #4b7f8c;
+        outline: none;
+    }
+</style>
+
 {% endblock %}

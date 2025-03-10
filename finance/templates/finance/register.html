@@ -1,11 +1,112 @@
 {% extends "finance/base.html" %}
+
 {% block content %}
-<div class="container">
-    <h2>Registro de Usuario</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Siguiente</button>
-    </form>
+<div class="min-h-screen flex items-center justify-center bg-[#f0f4f8]">
+    <div class="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full transition-all duration-300 transform hover:scale-105">
+        <h2 class="text-2xl font-semibold text-center text-[#4b7f8c] mb-6">Registro de Usuario</h2>
+        
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- Nombre de usuario -->
+            <div class="space-y-1">
+                <label for="username" class="text-lg font-semibold text-[#4b7f8c]">Nombre de usuario</label>
+                <input type="text" name="username" id="username" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6ee7b7]" value="{{ form.username.value }}" required>
+                {% if form.username.errors %}
+                    <div class="text-sm text-red-500 mt-1">
+                        {% for error in form.username.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Primer nombre -->
+            <div class="space-y-1">
+                <label for="first_name" class="text-lg font-semibold text-[#4b7f8c]">Primer nombre</label>
+                <input type="text" name="first_name" id="first_name" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6ee7b7]" value="{{ form.first_name.value }}" required>
+                {% if form.first_name.errors %}
+                    <div class="text-sm text-red-500 mt-1">
+                        {% for error in form.first_name.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Apellido -->
+            <div class="space-y-1">
+                <label for="last_name" class="text-lg font-semibold text-[#4b7f8c]">Apellido</label>
+                <input type="text" name="last_name" id="last_name" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6ee7b7]" value="{{ form.last_name.value }}" required>
+                {% if form.last_name.errors %}
+                    <div class="text-sm text-red-500 mt-1">
+                        {% for error in form.last_name.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Edad -->
+            <div class="space-y-1">
+                <label for="age" class="text-lg font-semibold text-[#4b7f8c]">Edad</label>
+                <input type="number" name="age" id="age" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6ee7b7]" value="{{ form.age.value }}" required>
+                {% if form.age.errors %}
+                    <div class="text-sm text-red-500 mt-1">
+                        {% for error in form.age.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Correo electrónico -->
+            <div class="space-y-1">
+                <label for="email" class="text-lg font-semibold text-[#4b7f8c]">Correo electrónico</label>
+                <input type="email" name="email" id="email" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6ee7b7]" value="{{ form.email.value }}" required>
+                {% if form.email.errors %}
+                    <div class="text-sm text-red-500 mt-1">
+                        {% for error in form.email.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Contraseña -->
+            <div class="space-y-1">
+                <label for="password1" class="text-lg font-semibold text-[#4b7f8c]">Contraseña</label>
+                <input type="password" name="password1" id="password1" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6ee7b7]" required>
+                {% if form.password1.errors %}
+                    <div class="text-sm text-red-500 mt-1">
+                        {% for error in form.password1.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Confirmación de contraseña -->
+            <div class="space-y-1">
+                <label for="password2" class="text-lg font-semibold text-[#4b7f8c]">Confirmar contraseña</label>
+                <input type="password" name="password2" id="password2" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6ee7b7]" required>
+                {% if form.password2.errors %}
+                    <div class="text-sm text-red-500 mt-1">
+                        {% for error in form.password2.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Botón de siguiente -->
+            <div class="pt-4">
+                <button type="submit" class="w-full bg-[#abebc6] text-white font-semibold py-3 rounded-lg hover:bg-[#7acdaf] transition-all duration-300 transform hover:scale-105">
+                    Siguiente
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
+
 {% endblock %}

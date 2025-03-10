@@ -1,26 +1,54 @@
 {% extends "finance/base.html" %}
 
 {% block content %}
-<div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-lg">
-    <h2 class="text-3xl font-semibold text-center text-gray-700 mb-6">Iniciar sesión</h2>
-    <form method="post">
-        {% csrf_token %}
-        <div class="space-y-4">
-            <div class="w-full">
-                <label for="username" class="block text-gray-700">Nombre de usuario</label>
-                <input type="text" name="username" id="username" class="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#abebc6]" placeholder="Ingresa tu nombre de usuario">
+<div class="h-screen w-full flex items-center justify-center">
+    <div class="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full transition-all duration-300 transform hover:scale-105">
+        <h2 class="text-3xl font-semibold text-center text-[#4b7f8c] mb-6">Iniciar sesión</h2>
+        
+        <!-- Formulario -->
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            
+            <!-- Campo de usuario -->
+            <div>
+                <label for="username" class="block text-gray-700 font-medium mb-2">Nombre de usuario</label>
+                <input type="text" name="username" id="username"
+                       class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none 
+                              focus:ring-2 focus:ring-[#abebc6] bg-gray-50 transition duration-300"
+                       placeholder="Ingresa tu nombre de usuario" required>
             </div>
-            <div class="w-full">
-                <label for="password" class="block text-gray-700">Contraseña</label>
-                <input type="password" name="password" id="password" class="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#abebc6]" placeholder="Ingresa tu contraseña">
+
+            <!-- Campo de contraseña -->
+            <div>
+                <label for="password" class="block text-gray-700 font-medium mb-2">Contraseña</label>
+                <input type="password" name="password" id="password"
+                       class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none 
+                              focus:ring-2 focus:ring-[#abebc6] bg-gray-50 transition duration-300"
+                       placeholder="Ingresa tu contraseña" required>
             </div>
-        </div>
-        <button type="submit" class="w-full bg-[#abebc6] text-white py-2 rounded-lg hover:bg-[#9ae4b6] focus:outline-none focus:ring-2 focus:ring-[#abebc6] mt-4">
-            Iniciar sesión
-        </button>
-    </form>
-    <p class="mt-4 text-center text-gray-600">¿No tienes una cuenta? 
-        <a href="{% url 'register' %}" class="text-[#abebc6] hover:underline">Regístrate aquí</a>
-    </p>
+
+            <!-- Botón de inicio de sesión -->
+            <button type="submit"
+                    class="w-full bg-[#abebc6] text-white font-semibold py-3 rounded-lg 
+                           hover:bg-[#7acdaf] transition-all duration-300 transform hover:scale-105">
+                Iniciar sesión
+            </button>
+        </form>
+
+        <!-- Enlace de registro -->
+        <p class="mt-4 text-center text-gray-600">
+            ¿No tienes una cuenta? 
+            <a href="{% url 'register' %}" class="text-[#4b7f8c] hover:underline font-semibold">
+                Regístrate aquí
+            </a>
+        </p>
+    </div>
 </div>
+
+<style>
+    html, body {
+        height: 100%;
+        margin: 0;
+    }
+</style>
 {% endblock %}

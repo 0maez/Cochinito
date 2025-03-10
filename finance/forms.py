@@ -16,6 +16,12 @@ class RegisterForm(UserCreationForm):
         model = User
         fields = ["username", "first_name", "last_name", "age", "email", "password1", "password2"]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Añadir clase 'form-control' a todos los campos
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control'})
+
     def save(self, commit=True):
         user = super().save(commit=False)
         user.first_name = self.cleaned_data["first_name"]
@@ -75,11 +81,18 @@ class ProfileForm(forms.ModelForm):
 class BudgetForm(forms.ModelForm):
     class Meta:
         model = Budget
-        fields = ['total_amount']  
+        fields = ['total_amount']
+        labels = {
+            'total_amount': 'Presupuesto inicial',  # Cambia el label aquí
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['total_amount'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Ingresa tu presupuesto inicial'})
+        # Agregar las clases CSS y placeholder
+        self.fields['total_amount'].widget.attrs.update({
+            'class': 'form-control border-2 border-[#4b7f8c] rounded-lg p-2 w-full',
+            'placeholder': 'Ingresa tu presupuesto inicial'
+        })
 
 class ReminderForm(forms.ModelForm):
     class Meta:
