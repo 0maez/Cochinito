@@ -1,170 +1,296 @@
 [
     {
         "model": "finance.IncomeSource",
-        "fields": {"name": "Salario"}
+        "fields": {
+            "name": "Salario",
+            "users": []
+        }
     },
     {
         "model": "finance.IncomeSource",
-        "fields": {"name": "Mesada"}
+        "fields": {
+            "name": "Mesada",
+            "users": []
+        }
     },
     {
         "model": "finance.IncomeSource",
-        "fields": {"name": "Pareja"}
+        "fields": {
+            "name": "Pareja",
+            "users": []
+        }
     },
     {
         "model": "finance.IncomeSource",
-        "fields": {"name": "Mis padres"}
+        "fields": {
+            "name": "Mis padres",
+            "users": []
+        }
     },
     {
         "model": "finance.IncomeSource",
-        "fields": {"name": "Inversiones"}
+        "fields": {
+            "name": "Inversiones",
+            "users": []
+        }
     },
     {
         "model": "finance.IncomeSource",
-        "fields": {"name": "Trabajo Remoto"}
+        "fields": {
+            "name": "Trabajo Remoto",
+            "users": []
+        }
     },
     {
         "model": "finance.IncomeSource",
-        "fields": {"name": "Bonos"}
+        "fields": {
+            "name": "Bonos",
+            "users": []
+        }
     },
     {
         "model": "finance.IncomeSource",
-        "fields": {"name": "Ventas"}
+        "fields": {
+            "name": "Ventas",
+            "users": []
+        }
     },
     {
         "model": "finance.BasicExpense",
-        "fields": {"name": "Alimentación"}
+        "fields": {
+            "name": "Alimentación",
+            "users": []
+        }
     },
     {
         "model": "finance.BasicExpense",
-        "fields": {"name": "Transporte público"}
+        "fields": {
+            "name": "Transporte público",
+            "users": []
+        }
     },
     {
         "model": "finance.BasicExpense",
-        "fields": {"name": "Vehículo propio"}
+        "fields": {
+            "name": "Vehículo propio",
+            "users": []
+        }
     },
     {
         "model": "finance.BasicExpense",
-        "fields": {"name": "Gas"}
+        "fields": {
+            "name": "Gas",
+            "users": []
+        }
     },
     {
         "model": "finance.BasicExpense",
-        "fields": {"name": "Luz"}
+        "fields": {
+            "name": "Luz",
+            "users": []
+        }
     },
     {
         "model": "finance.BasicExpense",
-        "fields": {"name": "Agua"}
+        "fields": {
+            "name": "Agua",
+            "users": []
+        }
     },
     {
         "model": "finance.BasicExpense",
-        "fields": {"name": "Renta"}
+        "fields": {
+            "name": "Renta",
+            "users": []
+        }
     },
     {
         "model": "finance.BasicExpense",
-        "fields": {"name": "Educación"}
+        "fields": {
+            "name": "Educación",
+            "users": []
+        }
     },
     {
         "model": "finance.BasicExpense",
-        "fields": {"name": "Internet"}
+        "fields": {
+            "name": "Internet",
+            "users": []
+        }
     },
     {
         "model": "finance.BasicExpense",
-        "fields": {"name": "Teléfono"}
+        "fields": {
+            "name": "Teléfono",
+            "users": []
+        }
     },
     {
         "model": "finance.BasicExpense",
-        "fields": {"name": "Seguro médico"}
+        "fields": {
+            "name": "Seguro médico",
+            "users": []
+        }
     },
     {
         "model": "finance.BasicExpense",
-        "fields": {"name": "Mantenimiento del hogar"}
+        "fields": {
+            "name": "Mantenimiento del hogar",
+            "users": []
+        }
     },
     {
         "model": "finance.WishExpense",
-        "fields": {"name": "Golosinas"}
+        "fields": {
+            "name": "Golosinas",
+            "users": []
+        }
     },
     {
         "model": "finance.WishExpense",
-        "fields": {"name": "Ropa"}
+        "fields": {
+            "name": "Ropa",
+            "users": []
+        }
     },
     {
         "model": "finance.WishExpense",
-        "fields": {"name": "Calzado"}
+        "fields": {
+            "name": "Calzado",
+            "users": []
+        }
     },
     {
         "model": "finance.WishExpense",
-        "fields": {"name": "Salud"}
+        "fields": {
+            "name": "Salud",
+            "users": []
+        }
     },
     {
         "model": "finance.WishExpense",
-        "fields": {"name": "Rutina"}
+        "fields": {
+            "name": "Rutina",
+            "users": []
+        }
     },
     {
         "model": "finance.WishExpense",
-        "fields": {"name": "Entretenimiento"}
+        "fields": {
+            "name": "Entretenimiento",
+            "users": []
+        }
     },
     {
         "model": "finance.WishExpense",
-        "fields": {"name": "Viajes"}
+        "fields": {
+            "name": "Viajes",
+            "users": []
+        }
     },
     {
         "model": "finance.WishExpense",
-        "fields": {"name": "Regalos"}
+        "fields": {
+            "name": "Regalos",
+            "users": []
+        }
     },
     {
         "model": "finance.WishExpense",
-        "fields": {"name": "Hobbies"}
+        "fields": {
+            "name": "Hobbies",
+            "users": []
+        }
     },
     {
         "model": "finance.WishExpense",
-        "fields": {"name": "Tecnología"}
+        "fields": {
+            "name": "Tecnología",
+            "users": []
+        }
     },
     {
         "model": "finance.WishExpense",
-        "fields": {"name": "Cuidado personal"}
+        "fields": {
+            "name": "Cuidado personal",
+            "users": []
+        }
     },
     {
         "model": "finance.WishExpense",
-        "fields": {"name": "Eventos sociales"}
+        "fields": {
+            "name": "Eventos sociales",
+            "users": []
+        }
     },
     {
         "model": "finance.WishExpense",
-        "fields": {"name": "Deportes"}
+        "fields": {
+            "name": "Deportes",
+            "users": []
+        }
     },
     {
         "model": "finance.SavingsInvestment",
-        "fields": {"name": "Ahorros"}
+        "fields": {
+            "name": "Ahorros",
+            "users": []
+        }
     },
     {
         "model": "finance.SavingsInvestment",
-        "fields": {"name": "Inversiones"}
+        "fields": {
+            "name": "Inversiones",
+            "users": []
+        }
     },
     {
         "model": "finance.SavingsInvestment",
-        "fields": {"name": "Fondo de emergencia"}
+        "fields": {
+            "name": "Fondo de emergencia",
+            "users": []
+        }
     },
     {
         "model": "finance.SavingsInvestment",
-        "fields": {"name": "Bienes raíces"}
+        "fields": {
+            "name": "Bienes raíces",
+            "users": []
+        }
     },
     {
         "model": "finance.SavingsInvestment",
-        "fields": {"name": "Bolsa de valores"}
+        "fields": {
+            "name": "Bolsa de valores",
+            "users": []
+        }
     },
     {
         "model": "finance.SavingsInvestment",
-        "fields": {"name": "Plan de retiro"}
+        "fields": {
+            "name": "Plan de retiro",
+            "users": []
+        }
     },
     {
         "model": "finance.SavingsInvestment",
-        "fields": {"name": "Negocios propios"}
+        "fields": {
+            "name": "Negocios propios",
+            "users": []
+        }
     },
     {
         "model": "finance.SavingsInvestment",
-        "fields": {"name": "Criptomonedas"}
+        "fields": {
+            "name": "Criptomonedas",
+            "users": []
+        }
     },
     {
         "model": "finance.SavingsInvestment",
-        "fields": {"name": "Educacion continua"}
+        "fields": {
+            "name": "Educacion continua",
+            "users": []
+        }
     }
 ]

@@ -67,6 +67,11 @@
     <!-- Cuadro Gastos Básicos -->
     <div class="bg-white shadow-lg rounded-lg p-6 mb-6">
         <h4 class="text-lg font-bold text-gray-800">Gastos Básicos (50%)</h4>
+        <ul>
+            {% for expense in basic_expenses %}
+            <li>{{ expense.name }}: ${{ source.amount|floatformat:2 }}</li>
+        {% endfor %}
+        </ul>
         <p class="text-gray-700"><strong>Disponible:</strong> ${{ available_for_basic_expenses|floatformat:2 }}</p>
         <p class="text-gray-700"><strong>Gastado:</strong> ${{ spent_on_basic|floatformat:2 }} ({{ percentage_basic|floatformat:0 }}%)</p>
 
@@ -99,6 +104,11 @@
     <!-- Cuadro Deseos -->
     <div class="bg-white shadow-lg rounded-lg p-6 mb-6">
         <h4 class="text-lg font-bold text-gray-800">Deseos (30%)</h4>
+        <ul>
+            {% for wish in wish_expenses %}
+                <li>{{ wish.name }}: ${{ source.amount|floatformat:2 }}</li>
+            {% endfor %}
+        </ul>
         <p class="text-gray-700"><strong>Disponible:</strong> ${{ available_for_wish_expenses|floatformat:2 }}</p>
         <p class="text-gray-700"><strong>Gastado:</strong> ${{ spent_on_wish|floatformat:2 }} ({{ percentage_wish|floatformat:0 }}%)</p>
 

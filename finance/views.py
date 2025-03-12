@@ -4,13 +4,10 @@ from django.contrib.auth.decorators import login_required
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from .forms import RegisterForm, IncomeForm, BasicExpenseForm, WishExpenseForm, SavingsInvestmentForm, BudgetForm, TransactionForm, ReminderForm
-from .models import IncomeSource, BasicExpense, WishExpense, SavingsInvestment, Budget, Transaction, Reminder
 from decimal import Decimal
-from finance import load_categories
-
+from finance.models import Budget, Transaction, Reminder
 def home(request):
     return render(request, "finance/home.html")
-
 
 def register(request):
     if request.method == 'POST':
@@ -24,69 +21,63 @@ def register(request):
     return render(request, 'finance/register.html', {'form': form})
 
 def income_form(request):
-    if request.method == "POST":
-        form = IncomeForm(request.POST)
+    if request.method == "POST":    
+        form = IncomeForm(request.POST, user=request.user)
         if form.is_valid():
-            selected_income_sources = form.cleaned_data["income_sources"]
-            for source in selected_income_sources:
-                IncomeSource.objects.get_or_create(user=request.user, name=source.name)
+            selected_sources = form.cleaned_data["income_sources"]
+            request.user.income_sources.add(*selected_sources)
             return redirect("basic_expense_form")
     else:
-        form = IncomeForm()
+        form = IncomeForm(user=request.user)
     return render(request, "finance/income_form.html", {"form": form})
-
 
 def basic_expense_form(request):
     if request.method == "POST":
-        form = BasicExpenseForm(request.POST) 
+        form = BasicExpenseForm(request.POST, user=request.user) 
         if form.is_valid():
-            selected_basic_expenses = form.cleaned_data["basic_expenses"]
-            for expense in selected_basic_expenses:
-                BasicExpense.objects.get_or_create(user=request.user, name=expense.name)
+            selected_sources = form.cleaned_data["basic_expenses"]
+            request.user.basic_expenses.add(*selected_sources)
             return redirect("wish_expense_form")
     else:
-        form = BasicExpenseForm()  
+        form = BasicExpenseForm(user=request.user)  
     return render(request, "finance/basic_expense_form.html", {"form": form})
 
 def wish_expense_form(request):
     if request.method == "POST":
-        form = WishExpenseForm(request.POST) 
+        form = WishExpenseForm(request.POST, user=request.user)  
         if form.is_valid():
-            selected_wish_expenses = form.cleaned_data["wish_expenses"]
-            for wish in selected_wish_expenses:
-                WishExpense.objects.get_or_create(user=request.user, name=wish.name)
+            selected_sources = form.cleaned_data["wish_expenses"]
+            request.user.wish_expenses.add(*selected_sources)
             return redirect("savings_investment_form")
     else:
-        form = WishExpenseForm()  
+        form = WishExpenseForm(user=request.user)  
     return render(request, "finance/wish_expense_form.html", {"form": form})
-
 
 def savings_investment_form(request):
     if request.method == "POST":
-        form = SavingsInvestmentForm(request.POST)
+        form = SavingsInvestmentForm(request.POST, user=request.user)
         if form.is_valid():
-            selected_savings = form.cleaned_data["savings_investments"]
-            for investment in selected_savings:
-                SavingsInvestment.objects.get_or_create(user=request.user, name=investment.name)
+            selected_sources = form.cleaned_data["savings_investments"]
+            request.user.savings_investments.add(*selected_sources)
             return redirect("dashboard")
     else:
-        form = SavingsInvestmentForm() 
+        form = SavingsInvestmentForm(user=request.user)  
     return render(request, "finance/savings_investment_form.html", {"form": form})
 
 @login_required
 def dashboard(request):
-    # Obtenemos el presupuesto del usuario
     user_budget = Budget.objects.filter(user=request.user).first()
     transactions = Transaction.objects.filter(user=request.user).order_by('-created_at')
-    income_sources = IncomeSource.objects.filter(user=request.user)
+    income_sources = request.user.income_sources.all()
+    basic_expenses = request.user.basic_expenses.all()
+    wish_expenses = request.user.wish_expenses.all()
+    savings_investments = request.user.savings_investments.all()  
     reminders = Reminder.objects.filter(user=request.user, is_paid=False)
 
-    # Filtramos las transacciones (NO los modelos de gasto)
     basic_expenses = Transaction.objects.filter(user=request.user, basic_expense__isnull=False)
     wish_expenses = Transaction.objects.filter(user=request.user, wish_expense__isnull=False)
     savings_investments = Transaction.objects.filter(user=request.user, savings_investment__isnull=False)
 
-    # Inicializamos variables
     available_for_basic_expenses = Decimal(0)
     available_for_wish_expenses = Decimal(0)
     available_for_savings = Decimal(0)
@@ -94,25 +85,21 @@ def dashboard(request):
     spent_on_wish = Decimal(0)
     total_amount = Decimal(0)
 
-    # Si el usuario tiene presupuesto, calculamos los saldos disponibles
     if user_budget:
         total_amount = user_budget.total_amount
         available_for_basic_expenses = user_budget.basic_expenses - sum(expense.amount for expense in basic_expenses)
         available_for_wish_expenses = user_budget.wish_expenses - sum(expense.amount for expense in wish_expenses)
         available_for_savings = user_budget.savings_investments
 
-        # Calculamos cuánto han gastado en cada categoría
         spent_on_basic = sum(expense.amount for expense in basic_expenses)
         spent_on_wish = sum(expense.amount for expense in wish_expenses)
 
-    # Calculamos el porcentaje gastado en cada categoría
     percentage_basic = (spent_on_basic / user_budget.basic_expenses) * 100 if user_budget.basic_expenses > 0 else 0
     percentage_wish = (spent_on_wish / user_budget.wish_expenses) * 100 if user_budget.wish_expenses > 0 else 0
 
-    # Calculamos si el saldo ha bajado del 20% del total
+
     is_balance_low = user_budget.current_balance <= (user_budget.total_amount * Decimal('0.20'))
 
-    # Verificamos si ha excedido el 50% o 30%
     exceeded_basic = available_for_basic_expenses < 0
     exceeded_wish = available_for_wish_expenses < 0
 
@@ -191,7 +178,6 @@ def reminder_list(request):
         'reminders': reminders,
     }
     return render(request, 'finance/reminder_list.html', context)
-
 
 class IncomeCreateView(CreateView):
     model = Transaction

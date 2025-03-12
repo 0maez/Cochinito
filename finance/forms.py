@@ -2,7 +2,6 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import Profile, IncomeSource, BasicExpense, WishExpense, SavingsInvestment, Reminder, Budget
-
 from finance.models import Profile, IncomeSource, BasicExpense, WishExpense, SavingsInvestment, Transaction, Budget
 
 
@@ -18,7 +17,6 @@ class RegisterForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Añadir clase 'form-control' a todos los campos
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
 
@@ -34,44 +32,63 @@ class RegisterForm(UserCreationForm):
 
 class IncomeForm(forms.Form):
     income_sources = forms.ModelMultipleChoiceField(
-        queryset=IncomeSource.objects.filter(user__isnull=True),  # Mostrar todas las categorías
+        queryset=IncomeSource.objects.none(),
         widget=forms.CheckboxSelectMultiple,
         required=True
     )
-
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)  # No necesitas el argumento 'user'
-
-    
+        user = kwargs.pop('user', None)  
+        super().__init__(*args, **kwargs)
+        if user:
+            self.fields['income_sources'].queryset = (
+                IncomeSource.objects.filter(users__isnull=True) |  
+                IncomeSource.objects.filter(users=user) 
+            )
 class BasicExpenseForm(forms.Form):
     basic_expenses = forms.ModelMultipleChoiceField(
-        queryset=BasicExpense.objects.filter(user__isnull=True),  
+        queryset=BasicExpense.objects.none(),
         widget=forms.CheckboxSelectMultiple,
         required=True
     )
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
+        if user:
+            self.fields['basic_expenses'].queryset = (
+                BasicExpense.objects.filter(users__isnull=True) |
+                BasicExpense.objects.filter(users=user)
+            )
 
 class WishExpenseForm(forms.Form):
     wish_expenses = forms.ModelMultipleChoiceField(
-        queryset=WishExpense.objects.filter(user__isnull=True),  
+        queryset=WishExpense.objects.none(),
         widget=forms.CheckboxSelectMultiple,
         required=True
     )
-
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
+        if user:
+            self.fields['wish_expenses'].queryset = (
+                WishExpense.objects.filter(users__isnull=True) | 
+                WishExpense.objects.filter(users=user)  
+            )
 
 class SavingsInvestmentForm(forms.Form):
-    savings_investments = forms.ModelMultipleChoiceField(
-        queryset=SavingsInvestment.objects.filter(user__isnull=True),  
+    savings_investments = forms.ModelMultipleChoiceField(  
+        queryset=SavingsInvestment.objects.none(), 
         widget=forms.CheckboxSelectMultiple,
         required=True
     )
-
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
+        if user:
+            self.fields['savings_investments'].queryset = (  
+                SavingsInvestment.objects.filter(users__isnull=True) | 
+                SavingsInvestment.objects.filter(users=user) 
+            )
 
 class ProfileForm(forms.ModelForm):
     class Meta: 
@@ -83,12 +100,11 @@ class BudgetForm(forms.ModelForm):
         model = Budget
         fields = ['total_amount']
         labels = {
-            'total_amount': 'Presupuesto inicial',  # Cambia el label aquí
+            'total_amount': 'Presupuesto inicial', 
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Agregar las clases CSS y placeholder
         self.fields['total_amount'].widget.attrs.update({
             'class': 'form-control border-2 border-[#4b7f8c] rounded-lg p-2 w-full',
             'placeholder': 'Ingresa tu presupuesto inicial'
@@ -115,12 +131,21 @@ class TransactionForm(forms.ModelForm):
         user = kwargs.pop('user', None) 
         super().__init__(*args, **kwargs)
         if self.transaction_type == 'income':
-            self.fields['income_source'].queryset = IncomeSource.objects.filter(user__isnull=True)
+            self.fields['income_source'].queryset = (
+                IncomeSource.objects.filter(users__isnull=True) |  
+                IncomeSource.objects.filter(users=user) 
+            )
             self.fields['basic_expense'].widget = forms.HiddenInput()  
             self.fields['wish_expense'].widget = forms.HiddenInput() 
             self.fields['savings_investment'].widget = forms.HiddenInput()  
         elif self.transaction_type == 'expense':
-            self.fields['basic_expense'].queryset = BasicExpense.objects.filter(user__isnull=True)
-            self.fields['wish_expense'].queryset = WishExpense.objects.filter(user__isnull=True)
+            self.fields['basic_expense'].queryset = (
+                BasicExpense.objects.filter(users__isnull=True) | 
+                BasicExpense.objects.filter(users=user) 
+            )
+            self.fields['wish_expense'].queryset = (
+                WishExpense.objects.filter(users__isnull=True) |  
+                WishExpense.objects.filter(users=user) 
+            )
             self.fields['income_source'].widget = forms.HiddenInput()  
             self.fields['savings_investment'].widget = forms.HiddenInput()  
