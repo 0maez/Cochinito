@@ -18,7 +18,6 @@ class RegisterForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Añadir clase 'form-control' a todos los campos
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
 
@@ -83,12 +82,11 @@ class BudgetForm(forms.ModelForm):
         model = Budget
         fields = ['total_amount']
         labels = {
-            'total_amount': 'Presupuesto inicial',  # Cambia el label aquí
+            'total_amount': 'Presupuesto inicial',  
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Agregar las clases CSS y placeholder
         self.fields['total_amount'].widget.attrs.update({
             'class': 'form-control border-2 border-[#4b7f8c] rounded-lg p-2 w-full',
             'placeholder': 'Ingresa tu presupuesto inicial'
@@ -108,7 +106,7 @@ class ReminderForm(forms.ModelForm):
 class TransactionForm(forms.ModelForm):
     class Meta:
         model = Transaction
-        fields = ['name', 'amount', 'description', 'category', 'income_source', 'basic_expense', 'wish_expense', 'savings_investment']
+        fields = ['name', 'amount', 'description', 'income_source', 'basic_expense', 'wish_expense', 'savings_investment']
 
     def __init__(self, *args, **kwargs):
         self.transaction_type = kwargs.pop('transaction_type', None)  
@@ -123,4 +121,9 @@ class TransactionForm(forms.ModelForm):
             self.fields['basic_expense'].queryset = BasicExpense.objects.filter(user__isnull=True)
             self.fields['wish_expense'].queryset = WishExpense.objects.filter(user__isnull=True)
             self.fields['income_source'].widget = forms.HiddenInput()  
-            self.fields['savings_investment'].widget = forms.HiddenInput()  
+            self.fields['savings_investment'].widget = forms.HiddenInput()
+        elif self.transaction_type == 'savings':
+            self.fields['savings_investment'].queryset = SavingsInvestment.objects.filter(user__isnull=True)
+            self.fields['income_source'].widget = forms.HiddenInput()
+            self.fields['basic_expense'].widget = forms.HiddenInput()
+            self.fields['wish_expense'].widget = forms.HiddenInput()  

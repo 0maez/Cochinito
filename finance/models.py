@@ -2,7 +2,7 @@ from django.db import models
 from decimal import Decimal
 from django.contrib.auth.models import User
 from django.utils import timezone
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.db.models import Sum
 
@@ -43,8 +43,8 @@ class SavingsInvestment(models.Model):
 
 class Budget(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2)  # Presupuesto inicial
-    current_balance = models.DecimalField(max_digits=10, decimal_places=2)  # Saldo actual
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)  
+    current_balance = models.DecimalField(max_digits=10, decimal_places=2)
     basic_expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     wish_expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     savings_investments = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -56,12 +56,10 @@ class Budget(models.Model):
         if self.current_balance is None:
             self.current_balance = total
 
-        # Asignar las proporciones fijas
         self.basic_expenses = total * Decimal('0.5')
         self.wish_expenses = total * Decimal('0.3')
         self.savings_investments = total * Decimal('0.2')
 
-        # Alerta de saldo bajo (imprime en consola; la lógica de envío de correo se hace en el comando)
         if self.current_balance <= total * Decimal('0.15'):
             print(f"⚠️ Alerta: Tu saldo está por debajo del 15% del presupuesto inicial ({total * Decimal('0.15'):.2f})")
 
@@ -75,6 +73,10 @@ class Budget(models.Model):
     def update_balance_with_expense(self, amount):
         self.current_balance -= Decimal(amount)
         self.save()
+    
+    def update_balance_with_savings(self, amount):
+        self.current_balance -= Decimal(amount)
+        self.save()
 
     def is_balance_low(self):
         threshold = self.total_amount * Decimal('0.15')
@@ -85,33 +87,33 @@ class Budget(models.Model):
 
     def total_wish_spent(self):
         return sum(t.amount for t in self.transaction_set.filter(wish_expense__isnull=False))
+    
+    def total_savings_spent(self):
+        return sum(t.amount for t in self.transaction_set.filter(savings_investment__isnull=False))
 
     @property
     def available_basic(self):
-        # Suma de todos los gastos básicos (se asume que en Transaction.category se guarda 'basic')
         basic_spent = self.transaction_set.filter(
             transaction_type='expense',
-            category__iexact='basic'
+            basic_expense__isnull=False
         ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
         allocated = self.total_amount * Decimal('0.5')
         return allocated - basic_spent
 
     @property
     def available_wish(self):
-        # Gastos de deseo (se asume 'desire')
         wish_spent = self.transaction_set.filter(
             transaction_type='expense',
-            category__iexact='desire'
+            wish_expense__isnull=False
         ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
         allocated = self.total_amount * Decimal('0.3')
         return allocated - wish_spent
 
     @property
     def available_savings(self):
-        # Ahorros (se asume 'savings')
         savings_spent = self.transaction_set.filter(
-            transaction_type='expense',
-            category__iexact='savings'
+            transaction_type='savings',
+            savings_investment__isnull=False
         ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
         allocated = self.total_amount * Decimal('0.2')
         return allocated - savings_spent
@@ -123,14 +125,14 @@ class Transaction(models.Model):
     TRANSACTION_TYPES = (
         ('income', 'Ingreso'),
         ('expense', 'Gasto'),
+        ('savings', 'Ahorro'),
     )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     budget = models.ForeignKey(Budget, on_delete=models.CASCADE)
     name = models.CharField(max_length=255, default="Sin nombre")
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPES)
-    description = models.TextField(blank=True, null=True)  
-    category = models.CharField(max_length=100, blank=True, null=True)  
+    description = models.TextField(blank=True, null=True)    
     income_source = models.ForeignKey('IncomeSource', on_delete=models.SET_NULL, null=True, blank=True)
     basic_expense = models.ForeignKey('BasicExpense', on_delete=models.SET_NULL, null=True, blank=True)
     wish_expense = models.ForeignKey('WishExpense', on_delete=models.SET_NULL, null=True, blank=True)
@@ -152,8 +154,21 @@ def update_budget_on_transaction(sender, instance, created, **kwargs):
             budget.total_amount = budget.current_balance
         elif instance.transaction_type == 'expense':
             budget.current_balance -= instance.amount
-
+        elif instance.transaction_type == 'savings':
+            budget.current_balance -= instance.amount
         budget.save()
+
+@receiver(post_delete, sender=Transaction)
+def update_budget_on_transaction_delete(sender, instance, **kwargs):
+    budget = instance.budget
+    if instance.transaction_type == 'income':
+        budget.current_balance -= instance.amount
+        budget.total_amount -= instance.amount
+    elif instance.transaction_type == 'expense':
+        budget.current_balance += instance.amount
+    elif instance.transaction_type == 'savings':
+        budget.current_balance += instance.amount    
+    budget.save()
 
 class Reminder(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE) 
@@ -170,7 +185,6 @@ class Reminder(models.Model):
 class Resource(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
-    image = models.ImageField(upload_to='resources/', blank=True, null=True)
     link = models.URLField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

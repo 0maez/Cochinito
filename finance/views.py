@@ -6,7 +6,6 @@ from django.urls import reverse_lazy
 from .forms import RegisterForm, IncomeForm, BasicExpenseForm, WishExpenseForm, SavingsInvestmentForm, BudgetForm, TransactionForm, ReminderForm
 from .models import IncomeSource, BasicExpense, WishExpense, SavingsInvestment, Budget, Transaction, Reminder
 from decimal import Decimal
-from finance import load_categories
 
 def home(request):
     return render(request, "finance/home.html")
@@ -75,46 +74,43 @@ def savings_investment_form(request):
 
 @login_required
 def dashboard(request):
-    # Obtenemos el presupuesto del usuario
     user_budget = Budget.objects.filter(user=request.user).first()
     transactions = Transaction.objects.filter(user=request.user).order_by('-created_at')
     income_sources = IncomeSource.objects.filter(user=request.user)
     reminders = Reminder.objects.filter(user=request.user, is_paid=False)
 
-    # Filtramos las transacciones (NO los modelos de gasto)
     basic_expenses = Transaction.objects.filter(user=request.user, basic_expense__isnull=False)
     wish_expenses = Transaction.objects.filter(user=request.user, wish_expense__isnull=False)
     savings_investments = Transaction.objects.filter(user=request.user, savings_investment__isnull=False)
 
-    # Inicializamos variables
     available_for_basic_expenses = Decimal(0)
     available_for_wish_expenses = Decimal(0)
-    available_for_savings = Decimal(0)
+    available_for_savings_expenses = Decimal(0)
     spent_on_basic = Decimal(0)
     spent_on_wish = Decimal(0)
+    spent_on_savings = Decimal(0)
     total_amount = Decimal(0)
 
-    # Si el usuario tiene presupuesto, calculamos los saldos disponibles
     if user_budget:
         total_amount = user_budget.total_amount
         available_for_basic_expenses = user_budget.basic_expenses - sum(expense.amount for expense in basic_expenses)
         available_for_wish_expenses = user_budget.wish_expenses - sum(expense.amount for expense in wish_expenses)
-        available_for_savings = user_budget.savings_investments
+        available_for_savings_investments = user_budget.available_savings - sum(expense.amount for expense in savings_investments)
+        
 
-        # Calculamos cuánto han gastado en cada categoría
         spent_on_basic = sum(expense.amount for expense in basic_expenses)
         spent_on_wish = sum(expense.amount for expense in wish_expenses)
+        spent_on_savings = sum(expense.amount for expense in savings_investments)
 
-    # Calculamos el porcentaje gastado en cada categoría
+
     percentage_basic = (spent_on_basic / user_budget.basic_expenses) * 100 if user_budget.basic_expenses > 0 else 0
     percentage_wish = (spent_on_wish / user_budget.wish_expenses) * 100 if user_budget.wish_expenses > 0 else 0
+    percentage_savings = (spent_on_savings / user_budget.savings_investments) * 100 if user_budget.savings_investments > 0 else 0
 
-    # Calculamos si el saldo ha bajado del 20% del total
     is_balance_low = user_budget.current_balance <= (user_budget.total_amount * Decimal('0.20'))
-
-    # Verificamos si ha excedido el 50% o 30%
     exceeded_basic = available_for_basic_expenses < 0
     exceeded_wish = available_for_wish_expenses < 0
+    
 
     context = {
         "user_budget": user_budget,
@@ -122,7 +118,7 @@ def dashboard(request):
         "total_amount": total_amount,
         "available_for_basic_expenses": available_for_basic_expenses,
         "available_for_wish_expenses": available_for_wish_expenses,
-        "available_for_savings": available_for_savings,
+        "available_for_savings_investments": available_for_savings_investments,
         "income_sources": income_sources,
         "basic_expenses": basic_expenses,
         "wish_expenses": wish_expenses,
@@ -130,6 +126,7 @@ def dashboard(request):
         "reminders": reminders,
         "percentage_basic": percentage_basic,
         "percentage_wish": percentage_wish,
+        "percentage_savings": percentage_savings,
         "is_balance_low": is_balance_low,
         "exceeded_basic": exceeded_basic,
         "exceeded_wish": exceeded_wish,
@@ -228,6 +225,26 @@ class ExpenseCreateView(CreateView):
     def form_valid(self, form):
         form.instance.user = self.request.user  
         form.instance.transaction_type = 'expense'  
+        budget = Budget.objects.filter(user=self.request.user).first()  
+        if budget:
+            form.instance.budget = budget  
+        return super().form_valid(form)
+    
+class SavingsCreateView(CreateView):
+    model = Transaction
+    form_class = TransactionForm
+    template_name = 'finance/add_savings.html'
+    success_url = reverse_lazy('transaction_list')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user  
+        kwargs['transaction_type'] = 'savings'  
+        return kwargs
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user  
+        form.instance.transaction_type = 'savings'  
         budget = Budget.objects.filter(user=self.request.user).first()  
         if budget:
             form.instance.budget = budget  
