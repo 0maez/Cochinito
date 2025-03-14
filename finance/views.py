@@ -83,6 +83,7 @@ def dashboard(request):
     wish_expenses = Transaction.objects.filter(user=request.user, wish_expense__isnull=False)
     savings_investments = Transaction.objects.filter(user=request.user, savings_investment__isnull=False)
 
+    # Definir valores predeterminados en caso de que no haya presupuesto
     available_for_basic_expenses = Decimal(0)
     available_for_wish_expenses = Decimal(0)
     available_for_savings_expenses = Decimal(0)
@@ -93,24 +94,21 @@ def dashboard(request):
 
     if user_budget:
         total_amount = user_budget.total_amount
-        available_for_basic_expenses = user_budget.basic_expenses - sum(expense.amount for expense in basic_expenses)
-        available_for_wish_expenses = user_budget.wish_expenses - sum(expense.amount for expense in wish_expenses)
-        available_for_savings_investments = user_budget.available_savings - sum(expense.amount for expense in savings_investments)
-        
-
         spent_on_basic = sum(expense.amount for expense in basic_expenses)
         spent_on_wish = sum(expense.amount for expense in wish_expenses)
         spent_on_savings = sum(expense.amount for expense in savings_investments)
 
+        available_for_basic_expenses = user_budget.basic_expenses - spent_on_basic
+        available_for_wish_expenses = user_budget.wish_expenses - spent_on_wish
+        available_for_savings_expenses = user_budget.savings_investments - spent_on_savings
 
-    percentage_basic = (spent_on_basic / user_budget.basic_expenses) * 100 if user_budget.basic_expenses > 0 else 0
-    percentage_wish = (spent_on_wish / user_budget.wish_expenses) * 100 if user_budget.wish_expenses > 0 else 0
-    percentage_savings = (spent_on_savings / user_budget.savings_investments) * 100 if user_budget.savings_investments > 0 else 0
+    percentage_basic = (spent_on_basic / user_budget.basic_expenses) * 100 if user_budget and user_budget.basic_expenses > 0 else 0
+    percentage_wish = (spent_on_wish / user_budget.wish_expenses) * 100 if user_budget and user_budget.wish_expenses > 0 else 0
+    percentage_savings = (spent_on_savings / user_budget.savings_investments) * 100 if user_budget and user_budget.savings_investments > 0 else 0
 
-    is_balance_low = user_budget.current_balance <= (user_budget.total_amount * Decimal('0.20'))
+    is_balance_low = user_budget.current_balance <= (user_budget.total_amount * Decimal('0.20')) if user_budget else False
     exceeded_basic = available_for_basic_expenses < 0
     exceeded_wish = available_for_wish_expenses < 0
-    
 
     context = {
         "user_budget": user_budget,
@@ -118,7 +116,7 @@ def dashboard(request):
         "total_amount": total_amount,
         "available_for_basic_expenses": available_for_basic_expenses,
         "available_for_wish_expenses": available_for_wish_expenses,
-        "available_for_savings_investments": available_for_savings_investments,
+        "available_for_savings_expenses": available_for_savings_expenses,
         "income_sources": income_sources,
         "basic_expenses": basic_expenses,
         "wish_expenses": wish_expenses,
@@ -131,7 +129,9 @@ def dashboard(request):
         "exceeded_basic": exceeded_basic,
         "exceeded_wish": exceeded_wish,
     }
+    
     return render(request, "finance/dashboard.html", context)
+
 
 @login_required
 def create_budget(request):

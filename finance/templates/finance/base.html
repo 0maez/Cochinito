@@ -17,7 +17,7 @@
             
             <!-- Logo -->
             <div class="flex items-center space-x-3">
-                <a href="/">
+                <a href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'home' %}{% endif %}">
                     <img src="{% static 'finance/images/logo.png' %}" alt="AlcanciaApp Logo" class="h-10">
                 </a>
                 <span class="text-xl font-semibold text-[#4b7f8c]">AlcanciaApp</span>
@@ -31,7 +31,12 @@
                     <a href="/reminders/" class="text-gray-700 hover:text-[#4b7f8c] py-2">Recordatorios</a>
                     <a href="/finance/summary" class="text-gray-700 hover:text-[#4b7f8c] py-2">Resumen</a>
                     <a href="/finance/education" class="text-gray-700 hover:text-[#4b7f8c] py-2">Educación financiera</a>
-                    
+
+                    <!-- Nuevo botón "Mi perfil" -->
+                    <a href="" class="bg-[#4b7f8c] text-white py-2 px-4 rounded-full hover:bg-blue-700">
+                        Mi perfil
+                    </a>
+
                     <form action="{% url 'logout' %}" method="POST" class="inline">
                         {% csrf_token %}
                         <button type="submit" class="bg-gray-500 text-white py-2 px-4 rounded-full hover:bg-gray-700">
@@ -67,7 +72,12 @@
                 <a href="/reminders/" class="text-gray-700 hover:text-[#4b7f8c] py-2">Recordatorios</a>
                 <a href="/finance/summary" class="text-gray-700 hover:text-[#4b7f8c] py-2">Resumen</a>
                 <a href="/finance/education" class="text-gray-700 hover:text-[#4b7f8c] py-2">Educación financiera</a>
-                
+
+                <!-- Nuevo botón "Mi perfil" en versión móvil -->
+                <a href="" class="bg-[#4b7f8c] text-white py-2 px-4 rounded-full hover:bg-blue-700 w-full text-center">
+                    Mi perfil
+                </a>
+
                 <form action="{% url 'logout' %}" method="POST" class="inline">
                     {% csrf_token %}
                     <button type="submit" class="bg-gray-500 text-white py-2 px-4 rounded-full hover:bg-gray-700 w-full">

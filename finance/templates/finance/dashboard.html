@@ -2,6 +2,7 @@
 
 {% block content %}
 <div class="container py-5">
+    <h2 class="text-center text-2xl font-semibold text-gray-800 mb-6">¡Bienvenido/a, {{ user.username }}!</h2>
     <h2 class="text-center text-2xl font-semibold text-gray-800 mb-6">Mis Finanzas</h2>
 
     <!-- Cuadro Presupuesto Total -->
@@ -59,7 +60,7 @@
         <h3 class="text-lg font-bold text-gray-800">Ingresos</h3>
         <ul>
             {% for source in income_sources %}
-                <li>{{ source.name }}: ${{ source.amount|floatformat:2 }}</li>
+                <li>{{ source.name }} {{ source.amount|floatformat:2 }}</li>
             {% endfor %}
         </ul>
     </div>
@@ -131,7 +132,7 @@
     <!-- Cuadro Ahorros e Inversiones -->
     <div class="bg-white shadow-lg rounded-lg p-6 mb-6">
         <h3 class="text-lg font-bold text-gray-800">Ahorros e Inversiones (20%)</h3>
-        <p class="text-gray-700"><strong>Disponible:</strong> ${{ available_for_savings|floatformat:2 }}</p>
+        <p class="text-gray-700"><strong>Disponible:</strong> ${{ available_for_savings_expenses|floatformat:2 }}</p>
         <ul>
             {% for saving in savings_investments %}
                 <li>{{ saving.name }}: ${{ saving.amount|floatformat:2 }}</li>
@@ -159,7 +160,7 @@
 
         {% if exceeded_savings %}
         <div class="mt-3 bg-yellow-100 p-3 text-yellow-600 rounded-lg">
-            <i class="bi bi-exclamation-triangle"></i> Has excedido el presupuesto del 20% para ahorros e inversiones.
+            <i class="bi bi-exclamation-triangle"></i> Has completado tu meta de ahorro.
         </div>
         {% endif %}
     </div>
@@ -168,7 +169,7 @@
     <div class="mt-5 flex justify-between">
         <a href="{% url 'add_income' %}" class="bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-gray-700">Agregar Ingreso</a>
         <a href="{% url 'add_expense' %}" class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700">Agregar Gasto</a>
-        <a href="{% url 'add_savings' %}" class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700">Agregar Ahorro</a>
+        <a href="{% url 'add_savings' %}" class="bg-[#4b7f8c] text-white px-6 py-3 rounded-lg hover:bg-[#355f6c]">Agregar Ahorro</a>
         <a href="{% url 'transaction_list' %}" class="bg-[#abebc6] text-gray-800 px-6 py-3 rounded-lg hover:bg-teal-200">Historial</a>
     </div>
 </div>
