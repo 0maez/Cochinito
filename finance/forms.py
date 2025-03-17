@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import Profile, IncomeSource, BasicExpense, WishExpense, SavingsInvestment, Reminder, Budget
-
+from django.contrib.auth.forms import UserChangeForm
 from finance.models import Profile, IncomeSource, BasicExpense, WishExpense, SavingsInvestment, Transaction, Budget
 
 
@@ -127,3 +127,13 @@ class TransactionForm(forms.ModelForm):
             self.fields['income_source'].widget = forms.HiddenInput()
             self.fields['basic_expense'].widget = forms.HiddenInput()
             self.fields['wish_expense'].widget = forms.HiddenInput()  
+
+class UserForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'email']
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['age']

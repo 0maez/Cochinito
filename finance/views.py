@@ -1,10 +1,11 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
-from .forms import RegisterForm, IncomeForm, BasicExpenseForm, WishExpenseForm, SavingsInvestmentForm, BudgetForm, TransactionForm, ReminderForm
-from .models import IncomeSource, BasicExpense, WishExpense, SavingsInvestment, Budget, Transaction, Reminder
+from .forms import RegisterForm, IncomeForm, BasicExpenseForm, WishExpenseForm, SavingsInvestmentForm, BudgetForm, TransactionForm, ReminderForm, UserForm, ProfileForm
+from .models import IncomeSource, BasicExpense, WishExpense, SavingsInvestment, Budget, Transaction, Reminder, Profile
 from decimal import Decimal
 
 def home(request):
@@ -286,3 +287,95 @@ def about_us(request):
 
 def features(request):
     return render(request, 'finance/features.html')
+
+class ProfileUpdateView(LoginRequiredMixin, UpdateView):
+    template_name = "finance/profile.html"
+
+    def get(self, request, *args, **kwargs):
+        user_form = UserForm(instance=request.user)
+        profile_form = ProfileForm(instance=request.user.profile)
+        income_form = IncomeForm()
+        expense_form = BasicExpenseForm()
+        wish_expense_form = WishExpenseForm()
+        savings_form = SavingsInvestmentForm()
+        
+        budget = Budget.objects.get(user=request.user)
+        transactions = Transaction.objects.filter(user=request.user).order_by('-created_at')[:2]
+        incomes = IncomeSource.objects.filter(user=request.user)
+        basic_expenses = BasicExpense.objects.filter(user=request.user)
+        wish_expenses = WishExpense.objects.filter(user=request.user)
+        savings = SavingsInvestment.objects.filter(user=request.user)
+
+        context = {
+            'user_form': user_form,
+            'profile_form': profile_form,
+            'income_form': income_form,
+            'expense_form': expense_form,
+            'wish_expense_form': wish_expense_form,
+            'savings_form': savings_form,
+            'budget': budget,
+            'transactions': transactions,
+            'incomes': incomes,
+            'basic_expenses': basic_expenses,
+            'wish_expenses': wish_expenses,
+            'savings': savings,
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request, *args, **kwargs):
+        user_form = UserForm(request.POST, instance=request.user)
+        profile_form = ProfileForm(request.POST, instance=request.user.profile)
+        income_form = IncomeSourceForm(request.POST)
+        expense_form = BasicExpenseForm(request.POST)
+        wish_expense_form = WishExpenseForm(request.POST)
+        savings_form = SavingsInvestmentForm(request.POST)
+
+        # Verificar qué formulario se ha enviado
+        if 'profile_form_submit' in request.POST and user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            return redirect('profile')
+
+        if 'income_form_submit' in request.POST and income_form.is_valid():
+            income_form.save()
+            return redirect('profile')
+
+        if 'expense_form_submit' in request.POST and expense_form.is_valid():
+            expense_form.save()
+            return redirect('profile')
+
+        if 'wish_expense_form_submit' in request.POST and wish_expense_form.is_valid():
+            wish_expense_form.save()
+            return redirect('profile')
+
+        if 'savings_form_submit' in request.POST and savings_form.is_valid():
+            savings_form.save()
+            return redirect('profile')
+
+        # Si no se guarda nada, renderiza la vista con los formularios
+        return self.get(request)
+
+
+# Eliminar ingreso
+def delete_income(request, income_id):
+    income = get_object_or_404(IncomeSource, id=income_id, user=request.user)
+    income.delete()
+    return redirect('profile')
+
+# Eliminar gasto básico
+def delete_expense(request, expense_id):
+    expense = get_object_or_404(BasicExpense, id=expense_id, user=request.user)
+    expense.delete()
+    return redirect('profile')
+
+# Eliminar gasto de deseo
+def delete_wish_expense(request, wish_expense_id):
+    wish_expense = get_object_or_404(WishExpense, id=wish_expense_id, user=request.user)
+    wish_expense.delete()
+    return redirect('profile')
+
+# Eliminar ahorro
+def delete_saving(request, saving_id):
+    saving = get_object_or_404(SavingsInvestment, id=saving_id, user=request.user)
+    saving.delete()
+    return redirect('profile')

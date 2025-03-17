@@ -1,0 +1,227 @@
+{% extends "finance/base.html" %}
+
+{% block content %}
+<div class="min-h-screen w-full bg-gray-100 py-10">
+    <div class="container mx-auto px-4">
+        <!-- Primer contenedor agrupado -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Tarjeta de perfil -->
+            <div class="bg-white p-6 rounded-2xl shadow-xl transition-transform duration-300 transform hover:scale-[1.03]">
+                <h4 class="text-2xl font-semibold text-[#4b7f8c] mb-4">Mi Perfil</h4>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="space-y-4">
+                        <div class="mb-4">
+                            {% for field in user_form %}
+                                <div class="mb-4">
+                                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
+                                    <div class="mt-1">
+                                        <input 
+                                            type="{{ field.type }}" 
+                                            name="{{ field.name }}" 
+                                            id="{{ field.id_for_label }}" 
+                                            value="{{ field.value }}" 
+                                            class="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#7acdaf]" 
+                                            {% if field.value %}value="{{ field.value }}"{% endif %}
+                                        />
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="mb-4">
+                            {% for field in profile_form %}
+                                <div class="mb-4">
+                                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
+                                    <div class="mt-1">
+                                        <input 
+                                            type="{{ field.type }}" 
+                                            name="{{ field.name }}" 
+                                            id="{{ field.id_for_label }}" 
+                                            value="{{ field.value }}" 
+                                            class="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#7acdaf]" 
+                                            {% if field.value %}value="{{ field.value }}"{% endif %}
+                                        />
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <button type="submit" class="w-full bg-[#7acdaf] text-white font-semibold py-2 rounded-lg hover:bg-[#5ba89a] transition-all duration-300">
+                            Guardar cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tarjeta de saldo y transacciones -->
+            <div class="bg-white p-6 rounded-2xl shadow-xl transition-transform duration-300 transform hover:scale-[1.03]">
+                <h4 class="text-2xl font-semibold text-[#4b7f8c] mb-4">Saldo Disponible</h4>
+                <h3 class="text-3xl font-semibold text-[#7acdaf] mb-4">${{ budget.current_balance }}</h3>
+                <h5 class="text-xl font-medium text-gray-600 mb-2">Últimas transacciones:</h5>
+                <ul class="space-y-2">
+                    {% for transaction in transactions %}
+                        <li class="text-gray-700">{{ transaction.name }} - ${{ transaction.amount }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Segundo contenedor que abarca todo el ancho -->
+        <div class="grid grid-cols-1 gap-6 mt-6 w-full">
+            <!-- Tarjeta de ingresos/gastos -->
+            <div class="bg-white p-6 rounded-2xl shadow-xl transition-transform duration-300 transform hover:scale-[1.03] w-full">
+                <h4 class="text-2xl font-semibold text-[#4b7f8c] mb-4">Ingresos y Gastos</h4>
+
+                <!-- Ingresos y gastos organizados en 4 secciones -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Fuentes de ingreso -->
+                    <div class="bg-[#f3f8f9] p-4 rounded-lg shadow-md transition-all duration-300 hover:scale-105">
+                        <h5 class="text-xl font-semibold text-[#7acdaf] mb-3">Fuentes de Ingreso</h5>
+                        <ul class="space-y-2">
+                            {% for income in incomes %}
+                                <li class="text-gray-700 flex justify-between items-center">{{ income.name }}
+                                    <button type="button" class="text-red-600 hover:text-red-800" data-bs-toggle="modal" data-bs-target="#deleteIncomeModal{{ income.id }}">
+                                        Eliminar
+                                    </button>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        <button class="mt-4 w-full bg-[#7acdaf] text-white font-semibold py-2 rounded-lg hover:bg-[#5ba89a] transition-all duration-300" data-modal-toggle="income-modal">
+                            Añadir Fuente de Ingreso
+                        </button>
+                    </div>
+
+                    <!-- Gastos básicos -->
+                    <div class="bg-[#f3f8f9] p-4 rounded-lg shadow-md transition-all duration-300 hover:scale-105">
+                        <h5 class="text-xl font-semibold text-[#7acdaf] mb-3">Gastos Básicos</h5>
+                        <ul class="space-y-2">
+                            {% for expense in basic_expenses %}
+                                <li class="text-gray-700 flex justify-between items-center">{{ expense.name }}
+                                    <button type="button" class="text-red-600 hover:text-red-800" data-bs-toggle="modal" data-bs-target="#deleteExpenseModal{{ expense.id }}">
+                                        Eliminar
+                                    </button>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        <button class="mt-4 w-full bg-red-400 text-white font-semibold py-2 rounded-lg hover:bg-red-500 transition-all duration-300" data-modal-toggle="expense-modal">
+                            Gestionar Gastos Básicos
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <!-- Gastos de deseo -->
+                    <div class="bg-[#f3f8f9] p-4 rounded-lg shadow-md transition-all duration-300 hover:scale-105">
+                        <h5 class="text-xl font-semibold text-[#7acdaf] mb-3">Gastos de Deseo</h5>
+                        <ul class="space-y-2">
+                            {% for wish in wish_expenses %}
+                                <li class="text-gray-700 flex justify-between items-center">{{ wish.name }}
+                                    <button type="button" class="text-red-600 hover:text-red-800" data-bs-toggle="modal" data-bs-target="#deleteWishModal{{ wish.id }}">
+                                        Eliminar
+                                    </button>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        <button class="mt-4 w-full bg-yellow-400 text-white font-semibold py-2 rounded-lg hover:bg-yellow-500 transition-all duration-300" data-modal-toggle="wish-expense-modal">
+                            Gestionar Gastos de Deseo
+                        </button>
+                    </div>
+
+                    <!-- Ahorros e inversiones -->
+                    <div class="bg-[#f3f8f9] p-4 rounded-lg shadow-md transition-all duration-300 hover:scale-105">
+                        <h5 class="text-xl font-semibold text-[#7acdaf] mb-3">Ahorros e Inversiones</h5>
+                        <ul class="space-y-2">
+                            {% for saving in savings %}
+                                <li class="text-gray-700 flex justify-between items-center">{{ saving.name }}
+                                    <button type="button" class="text-red-600 hover:text-red-800" data-bs-toggle="modal" data-bs-target="#deleteSavingModal{{ saving.id }}">
+                                        Eliminar
+                                    </button>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        <button class="mt-4 w-full bg-blue-400 text-white font-semibold py-2 rounded-lg hover:bg-blue-500 transition-all duration-300" data-modal-toggle="savings-modal">
+                            Gestionar Ahorros
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de ingreso -->
+<div id="income-modal" class="fixed inset-0 z-50 hidden justify-center items-center bg-gray-500 bg-opacity-50">
+    <div class="bg-white p-6 rounded-2xl max-w-lg w-full">
+        <h4 class="text-2xl font-semibold text-[#4b7f8c] mb-4">Añadir Fuente de Ingreso</h4>
+        <form method="post">
+            {% csrf_token %}
+            {{ income_form.as_p }}
+            <button type="submit" class="w-full bg-[#abebc6] text-white font-semibold py-2 rounded-lg hover:bg-[#7acdaf] transition-all duration-300">
+                Añadir Ingreso
+            </button>
+        </form>
+        <button class="mt-4 w-full bg-gray-300 text-gray-700 font-semibold py-2 rounded-lg" data-modal-toggle="income-modal">
+            Cerrar
+        </button>
+    </div>
+</div>
+
+<!-- Modal de gastos básicos -->
+<div id="expense-modal" class="fixed inset-0 z-50 hidden justify-center items-center bg-gray-500 bg-opacity-50">
+    <div class="bg-white p-6 rounded-2xl max-w-lg w-full">
+        <h4 class="text-2xl font-semibold text-[#4b7f8c] mb-4">Añadir Gasto Básico</h4>
+        <form method="post">
+            {% csrf_token %}
+            {{ expense_form.as_p }}
+            <button type="submit" class="w-full bg-red-400 text-white font-semibold py-2 rounded-lg hover:bg-red-500 transition-all duration-300">
+                Añadir Gasto
+            </button>
+        </form>
+        <button class="mt-4 w-full bg-gray-300 text-gray-700 font-semibold py-2 rounded-lg" data-modal-toggle="expense-modal">
+            Cerrar
+        </button>
+    </div>
+</div>
+
+<!-- Modal de gastos de deseo -->
+<div id="wish-expense-modal" class="fixed inset-0 z-50 hidden justify-center items-center bg-gray-500 bg-opacity-50">
+    <div class="bg-white p-6 rounded-2xl max-w-lg w-full">
+        <h4 class="text-2xl font-semibold text-[#4b7f8c] mb-4">Añadir Gasto de Deseo</h4>
+        <form method="post">
+            {% csrf_token %}
+            {{ wish_expense_form.as_p }}
+            <button type="submit" class="w-full bg-yellow-400 text-white font-semibold py-2 rounded-lg hover:bg-yellow-500 transition-all duration-300">
+                Añadir Deseo
+            </button>
+        </form>
+        <button class="mt-4 w-full bg-gray-300 text-gray-700 font-semibold py-2 rounded-lg" data-modal-toggle="wish-expense-modal">
+            Cerrar
+        </button>
+    </div>
+</div>
+
+<!-- Modal de ahorros -->
+<div id="savings-modal" class="fixed inset-0 z-50 hidden justify-center items-center bg-gray-500 bg-opacity-50">
+    <div class="bg-white p-6 rounded-2xl max-w-lg w-full">
+        <h4 class="text-2xl font-semibold text-[#4b7f8c] mb-4">Añadir Ahorro</h4>
+        <form method="post">
+            {% csrf_token %}
+            {{ savings_form.as_p }}
+            <button type="submit" class="w-full bg-blue-400 text-white font-semibold py-2 rounded-lg hover:bg-blue-500 transition-all duration-300">
+                Añadir Ahorro
+            </button>
+        </form>
+        <button class="mt-4 w-full bg-gray-300 text-gray-700 font-semibold py-2 rounded-lg" data-modal-toggle="savings-modal">
+            Cerrar
+        </button>
+    </div>
+</div>
+<!-- Script para mostrar y ocultar los modales -->
+<script>
+    document.querySelectorAll('[data-modal-toggle]').forEach(button => {
+        button.addEventListener('click', () => {
+            const modalId = button.getAttribute('data-modal-toggle');
+            document.getElementById(modalId).classList.toggle('hidden');
+        });
+    });
+</script>
+{% endblock %}
