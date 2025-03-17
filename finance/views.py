@@ -3,6 +3,9 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
+from django.db import models 
+from django.db.models import Sum
+from django.db.models.functions import TruncMonth
 from .forms import RegisterForm, IncomeForm, BasicExpenseForm, WishExpenseForm, SavingsInvestmentForm, BudgetForm, TransactionForm, ReminderForm
 from .models import IncomeSource, BasicExpense, WishExpense, SavingsInvestment, Budget, Transaction, Reminder
 from decimal import Decimal
@@ -286,3 +289,79 @@ def about_us(request):
 
 def features(request):
     return render(request, 'finance/features.html')
+
+from decimal import Decimal
+from django.db.models import Sum, Q
+from django.db.models.functions import TruncMonth
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from .models import Budget, Transaction
+
+@login_required
+def summary(request):
+    user_budget = Budget.objects.filter(user=request.user).first()
+    transactions = Transaction.objects.filter(user=request.user)
+
+    # Calcular totales y convertirlos a float
+    total_income = float(transactions.filter(income_source__isnull=False).aggregate(Sum('amount'))['amount__sum'] or 0)
+    total_basic_expenses = float(transactions.filter(basic_expense__isnull=False).aggregate(Sum('amount'))['amount__sum'] or 0)
+    total_wish_expenses = float(transactions.filter(wish_expense__isnull=False).aggregate(Sum('amount'))['amount__sum'] or 0)
+    total_savings_investments = float(transactions.filter(savings_investment__isnull=False).aggregate(Sum('amount'))['amount__sum'] or 0)
+
+    # Calcular porcentajes
+    percentage_basic_expenses = (total_basic_expenses / float(user_budget.basic_expenses)) * 100 if user_budget.basic_expenses > 0 else 0
+    percentage_wish_expenses = (total_wish_expenses / float(user_budget.wish_expenses)) * 100 if user_budget.wish_expenses > 0 else 0
+    percentage_savings_investments = (total_savings_investments / float(user_budget.savings_investments)) * 100 if user_budget.savings_investments > 0 else 0
+
+    # Calcular saldos restantes
+    remaining_basic_expenses = float(user_budget.basic_expenses) - total_basic_expenses
+    remaining_wish_expenses = float(user_budget.wish_expenses) - total_wish_expenses
+    remaining_savings_investments = float(user_budget.savings_investments) - total_savings_investments
+
+    # Datos mensuales
+    monthly_data = transactions.annotate(month=TruncMonth('created_at')).values('month').annotate(
+        total_income=Sum('amount', filter=Q(income_source__isnull=False)),
+        total_basic_expenses=Sum('amount', filter=Q(basic_expense__isnull=False)),
+        total_wish_expenses=Sum('amount', filter=Q(wish_expense__isnull=False)),
+        total_savings_investments=Sum('amount', filter=Q(savings_investment__isnull=False))
+    ).order_by('month')
+
+    # Formatear las fechas y convertir Decimal a float
+    formatted_monthly_data = []
+    for data in monthly_data:
+        data['month'] = data['month'].strftime('%Y-%m')  # Formato: Año-Mes
+        data['total_income'] = float(data['total_income'] or 0)
+        data['total_basic_expenses'] = float(data['total_basic_expenses'] or 0)
+        data['total_wish_expenses'] = float(data['total_wish_expenses'] or 0)
+        data['total_savings_investments'] = float(data['total_savings_investments'] or 0)
+        formatted_monthly_data.append(data)
+
+    # Distribución del presupuesto (convertir Decimal a float)
+    budget_distribution = {
+        'Gastos Básicos': float(user_budget.basic_expenses),
+        'Deseos': float(user_budget.wish_expenses),
+        'Ahorros/Inversiones': float(user_budget.savings_investments),
+    }
+
+    # Balance neto
+    total_expenses = total_basic_expenses + total_wish_expenses + total_savings_investments
+    net_balance = total_income - total_expenses
+
+    # Contexto para la plantilla
+    context = {
+        'total_income': total_income,
+        'total_basic_expenses': total_basic_expenses,
+        'total_wish_expenses': total_wish_expenses,
+        'total_savings_investments': total_savings_investments,
+        'user_budget': user_budget,
+        'percentage_basic_expenses': percentage_basic_expenses,
+        'percentage_wish_expenses': percentage_wish_expenses,
+        'percentage_savings_investments': percentage_savings_investments,
+        'remaining_basic_expenses': remaining_basic_expenses,
+        'remaining_wish_expenses': remaining_wish_expenses,
+        'remaining_savings_investments': remaining_savings_investments,
+        'monthly_data': formatted_monthly_data,  # Usar los datos formateados
+        'budget_distribution': budget_distribution,
+        'net_balance': net_balance,
+    }
+    return render(request, 'finance/summary.html', context)

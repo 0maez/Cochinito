@@ -1,0 +1,183 @@
+{% extends 'finance/base.html' %}
+
+{% block content %}
+<h1>Resumen Financiero</h1>
+
+<!-- Contenedor principal para los gráficos -->
+<div class="chart-container">
+    <!-- Primera fila: Dos gráficos lado a lado -->
+    <div class="chart-row">
+        <!-- Gráfico de barras: Comparación de ingresos y gastos -->
+        <div class="chart-item">
+            <h2>Comparación de Ingresos y Gastos</h2>
+            <canvas id="barChart" width="200" height="100"></canvas>
+        </div>
+
+        <!-- Gráfico de pastel: Distribución del presupuesto -->
+        <div class="chart-item">
+            <h2>Distribución del Presupuesto</h2>
+            <canvas id="pieChart" width="200" height="100"></canvas>
+        </div>
+    </div>
+
+    <!-- Segunda fila: Un gráfico más grande -->
+    <div class="chart-row">
+        <!-- Gráfico de líneas: Evolución mensual de ingresos y gastos -->
+        <div class="chart-item full-width">
+            <h2>Evolución Mensual de Ingresos y Gastos</h2>
+            <canvas id="lineChart" width="800" height="400"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Incluir Chart.js desde un CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Script para configurar los gráficos -->
+<script>
+    // Datos desde el contexto de Django
+    const totalIncome = {{ total_income }};
+    const totalBasicExpenses = {{ total_basic_expenses }};
+    const totalWishExpenses = {{ total_wish_expenses }};
+    const totalSavingsInvestments = {{ total_savings_investments }};
+    const budgetDistribution = {{ budget_distribution|safe }};
+    const monthlyData = {{ monthly_data|safe }};
+
+    // Gráfico de barras: Comparación de ingresos y gastos
+    const barCtx = document.getElementById('barChart').getContext('2d');
+    new Chart(barCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Ingresos', 'Gastos Básicos', 'Deseos', 'Ahorros/Inversiones'],
+            datasets: [{
+                label: 'Total',
+                data: [totalIncome, totalBasicExpenses, totalWishExpenses, totalSavingsInvestments],
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.2)', // Ingresos
+                    'rgba(255, 99, 132, 0.2)', // Gastos básicos
+                    'rgba(54, 162, 235, 0.2)', // Deseos
+                    'rgba(255, 206, 86, 0.2)'  // Ahorros/Inversiones
+                ],
+                borderColor: [
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Gráfico de pastel: Distribución del presupuesto
+    const pieCtx = document.getElementById('pieChart').getContext('2d');
+    new Chart(pieCtx, {
+        type: 'pie',
+        data: {
+            labels: ['Gastos Básicos', 'Deseos', 'Ahorros/Inversiones'],
+            datasets: [{
+                label: 'Distribución del Presupuesto',
+                data: [budgetDistribution['Gastos Básicos'], budgetDistribution['Deseos'], budgetDistribution['Ahorros/Inversiones']],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)', // Gastos básicos
+                    'rgba(54, 162, 235, 0.2)', // Deseos
+                    'rgba(255, 206, 86, 0.2)'  // Ahorros/Inversiones
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)'
+                ],
+                borderWidth: 1
+            }]
+        }
+    });
+
+    // Gráfico de líneas: Evolución mensual de ingresos y gastos
+    const lineCtx = document.getElementById('lineChart').getContext('2d');
+    const months = monthlyData.map(data => data.month);
+    const monthlyIncome = monthlyData.map(data => data.total_income || 0);
+    const monthlyBasicExpenses = monthlyData.map(data => data.total_basic_expenses || 0);
+    const monthlyWishExpenses = monthlyData.map(data => data.total_wish_expenses || 0);
+    const monthlySavingsInvestments = monthlyData.map(data => data.total_savings_investments || 0);
+
+    new Chart(lineCtx, {
+        type: 'line',
+        data: {
+            labels: months,
+            datasets: [
+                {
+                    label: 'Ingresos',
+                    data: monthlyIncome,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    fill: false
+                },
+                {
+                    label: 'Gastos Básicos',
+                    data: monthlyBasicExpenses,
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    fill: false
+                },
+                {
+                    label: 'Deseos',
+                    data: monthlyWishExpenses,
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    fill: false
+                },
+                {
+                    label: 'Ahorros/Inversiones',
+                    data: monthlySavingsInvestments,
+                    borderColor: 'rgba(255, 206, 86, 1)',
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+
+<!-- Estilos CSS para organizar los gráficos -->
+<style>
+    .chart-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .chart-row {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .chart-item {
+        flex: 1;
+        background-color: #f9f9f9;
+        padding: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .chart-item.full-width {
+        flex: 100%;
+    }
+
+    h2 {
+        margin-bottom: 1rem;
+        font-size: 1.25rem;
+        color: #333;
+    }
+</style>
+{% endblock %}
