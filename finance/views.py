@@ -4,11 +4,17 @@ from django.contrib.auth.decorators import login_required
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.db import models 
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.db.models.functions import TruncMonth
 from .forms import RegisterForm, IncomeForm, BasicExpenseForm, WishExpenseForm, SavingsInvestmentForm, BudgetForm, TransactionForm, ReminderForm
 from .models import IncomeSource, BasicExpense, WishExpense, SavingsInvestment, Budget, Transaction, Reminder
 from decimal import Decimal
+import csv
+import datetime
+from io import BytesIO
+from django.http import JsonResponse, HttpResponse
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
 def home(request):
     return render(request, "finance/home.html")
@@ -290,13 +296,6 @@ def about_us(request):
 def features(request):
     return render(request, 'finance/features.html')
 
-from decimal import Decimal
-from django.db.models import Sum, Q
-from django.db.models.functions import TruncMonth
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
-from .models import Budget, Transaction
-
 @login_required
 def summary(request):
     user_budget = Budget.objects.filter(user=request.user).first()
@@ -336,7 +335,7 @@ def summary(request):
         data['total_savings_investments'] = float(data['total_savings_investments'] or 0)
         formatted_monthly_data.append(data)
 
-    # Distribución del presupuesto (convertir Decimal a float)
+    # Distribución del presupuesto
     budget_distribution = {
         'Gastos Básicos': float(user_budget.basic_expenses),
         'Deseos': float(user_budget.wish_expenses),
@@ -347,7 +346,6 @@ def summary(request):
     total_expenses = total_basic_expenses + total_wish_expenses + total_savings_investments
     net_balance = total_income - total_expenses
 
-    # Contexto para la plantilla
     context = {
         'total_income': total_income,
         'total_basic_expenses': total_basic_expenses,
@@ -360,8 +358,86 @@ def summary(request):
         'remaining_basic_expenses': remaining_basic_expenses,
         'remaining_wish_expenses': remaining_wish_expenses,
         'remaining_savings_investments': remaining_savings_investments,
-        'monthly_data': formatted_monthly_data,  # Usar los datos formateados
+        'monthly_data': formatted_monthly_data,
         'budget_distribution': budget_distribution,
         'net_balance': net_balance,
     }
     return render(request, 'finance/summary.html', context)
+
+
+@login_required
+def export_csv(request):
+    """Exporta las transacciones filtradas en formato CSV."""
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="financial_summary.csv"'
+    
+    writer = csv.writer(response)
+    writer.writerow(['Fecha', 'Origen de Ingreso', 'Gasto Básico', 'Deseo', 'Ahorro/Inversión', 'Monto'])
+    
+    # Filtrar las transacciones del usuario
+    transactions = Transaction.objects.filter(user=request.user)
+    # (Opcional) Filtrar por fechas si se pasan en la query string
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    if start_date and end_date:
+        transactions = transactions.filter(created_at__range=[start_date, end_date])
+    
+    for transaction in transactions:
+        writer.writerow([
+            transaction.created_at.strftime('%Y-%m-%d'),
+            transaction.income_source if transaction.income_source else '',
+            transaction.basic_expense if transaction.basic_expense else '',
+            transaction.wish_expense if transaction.wish_expense else '',
+            transaction.savings_investment if transaction.savings_investment else '',
+            transaction.amount
+        ])
+    
+    return response
+
+
+@login_required
+def export_pdf(request):
+    """Exporta las transacciones filtradas en formato PDF."""
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="financial_summary.pdf"'
+    
+    buffer = BytesIO()
+    p = canvas.Canvas(buffer, pagesize=letter)
+    p.setFont("Helvetica", 12)
+    
+    # Filtrar las transacciones del usuario
+    transactions = Transaction.objects.filter(user=request.user)
+    # (Opcional) Filtrar por fechas si se pasan en la query string
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    if start_date and end_date:
+        transactions = transactions.filter(created_at__range=[start_date, end_date])
+    
+    # Encabezado del PDF
+    p.drawString(100, 750, "Resumen Financiero")
+    y = 730
+    
+    # Imprimir cada transacción
+    for transaction in transactions:
+        line = f"{transaction.created_at.strftime('%Y-%m-%d')} | " \
+               f"{transaction.income_source or 'Ingreso'} | " \
+               f"{transaction.basic_expense or 'Gasto Básico'} | " \
+               f"{transaction.wish_expense or 'Deseo'} | " \
+               f"{transaction.savings_investment or 'Ahorro/Inversión'} | " \
+               f"${transaction.amount}"
+        p.drawString(50, y, line)
+        y -= 20
+        # Si el espacio vertical es insuficiente, crear una nueva página
+        if y < 50:
+            p.showPage()
+            p.setFont("Helvetica", 12)
+            y = 750
+    
+    p.showPage()
+    p.save()
+    
+    pdf = buffer.getvalue()
+    buffer.close()
+    response.write(pdf)
+    
+    return response

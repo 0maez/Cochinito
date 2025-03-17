@@ -21,7 +21,7 @@ class Command(BaseCommand):
                 message = (
                     f"Hola {user.username},\n\n"
                     f"Tu saldo actual ({budget.current_balance:.2f}) es menor al 20% de tu presupuesto total ({budget.total_amount:.2f}).\n"
-                    "Se recomienda revisar tus gastos y ahorrar."
+                    "¡Recuerda que es momento de ahorrar!."
                 )
                 send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=False)
                 alerts.append("Saldo total inferior al 20%")
@@ -43,7 +43,7 @@ class Command(BaseCommand):
                 message = (
                     f"Hola {user.username},\n\n"
                     f"Los gastos de deseo han excedido lo asignado ({budget.total_amount * Decimal('0.3'):.2f}).\n"
-                    "Revisa y controla tus gastos de deseo."
+                    "¡Controla tus deseos!"
                 )
                 send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=False)
                 alerts.append("Gastos de deseo excedidos")

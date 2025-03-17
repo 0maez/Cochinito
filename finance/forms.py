@@ -7,10 +7,10 @@ from finance.models import Profile, IncomeSource, BasicExpense, WishExpense, Sav
 
 
 class RegisterForm(UserCreationForm):
-    first_name = forms.CharField(max_length=100, required=True)
-    last_name = forms.CharField(max_length=100, required=True)
-    age = forms.IntegerField(required=True)
-    email = forms.EmailField(required=True)
+    first_name = forms.CharField(max_length=100, required=True, widget=forms.TextInput(attrs={'placeholder': 'Nombre'}))
+    last_name = forms.CharField(max_length=100, required=True, widget=forms.TextInput(attrs={'placeholder': 'Apellido'}))
+    age = forms.IntegerField(required=True, widget=forms.NumberInput(attrs={'placeholder': 'Edad'}))
+    email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={'placeholder': 'Correo electrónico'}))
 
     class Meta:
         model = User
@@ -30,6 +30,7 @@ class RegisterForm(UserCreationForm):
             user.save()
             Profile.objects.create(user=user, age=self.cleaned_data["age"])
         return user
+
 
 class IncomeForm(forms.Form):
     income_sources = forms.ModelMultipleChoiceField(
