@@ -325,35 +325,32 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     def post(self, request, *args, **kwargs):
         user_form = UserForm(request.POST, instance=request.user)
         profile_form = ProfileForm(request.POST, instance=request.user.profile)
-        income_form = IncomeSourceForm(request.POST)
+        income_form = IncomeForm(request.POST)
         expense_form = BasicExpenseForm(request.POST)
         wish_expense_form = WishExpenseForm(request.POST)
         savings_form = SavingsInvestmentForm(request.POST)
 
         # Verificar qué formulario se ha enviado
-        if 'profile_form_submit' in request.POST and user_form.is_valid() and profile_form.is_valid():
-            user_form.save()
-            profile_form.save()
-            return redirect('profile')
+        form_data = {
+            'profile_form_submit': (user_form, profile_form),
+            'income_form_submit': (income_form,),
+            'expense_form_submit': (expense_form,),
+            'wish_expense_form_submit': (wish_expense_form,),
+            'savings_form_submit': (savings_form,)
+        }
 
-        if 'income_form_submit' in request.POST and income_form.is_valid():
-            income_form.save()
-            return redirect('profile')
-
-        if 'expense_form_submit' in request.POST and expense_form.is_valid():
-            expense_form.save()
-            return redirect('profile')
-
-        if 'wish_expense_form_submit' in request.POST and wish_expense_form.is_valid():
-            wish_expense_form.save()
-            return redirect('profile')
-
-        if 'savings_form_submit' in request.POST and savings_form.is_valid():
-            savings_form.save()
-            return redirect('profile')
+        for form_name, forms in form_data.items():
+            if form_name in request.POST:
+                # Procesar y guardar el formulario correspondiente
+                form_valid = all(form.is_valid() for form in forms)
+                if form_valid:
+                    for form in forms:
+                        form.save()
+                    return redirect('profile')
 
         # Si no se guarda nada, renderiza la vista con los formularios
         return self.get(request)
+
 
 
 # Eliminar ingreso
