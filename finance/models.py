@@ -196,8 +196,9 @@ class Modulo(models.Model):
     descripcion = models.TextField()
     video_titulo = models.CharField(max_length=255)
     video_url = models.URLField()
-    ejercicio = models.TextField()
-    orden = models.IntegerField(unique=True)  # Controla el orden de los módulos
+    ejercicio_instrucciones = models.TextField(null=True, blank=True, help_text="Ingrese cada instrucción en una nueva línea.")
+    ejercicio_objetivo = models.CharField(null=True, blank=True, max_length=255)
+    orden = models.IntegerField(unique=True)  
 
     def __str__(self):
         return self.titulo
