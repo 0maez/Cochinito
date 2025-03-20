@@ -158,9 +158,9 @@
         </div>
     </div>
 
-        {% if exceeded_savings %}
-        <div class="mt-3 bg-yellow-100 p-3 text-yellow-600 rounded-lg">
-            <i class="bi bi-exclamation-triangle"></i> Has completado tu meta de ahorro.
+        {% if percentage_savings >= 100 %}
+        <div class="mt-3 bg-green-100 p-3 text-green-600 rounded-lg">
+            <i class="bi bi-check-circle"></i> ¡Felicidades por completar tu meta de ahorro!
         </div>
         {% endif %}
     </div>
@@ -170,7 +170,7 @@
         <a href="{% url 'add_income' %}" class="bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-gray-700">Agregar Ingreso</a>
         <a href="{% url 'add_expense' %}" class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700">Agregar Gasto</a>
         <a href="{% url 'add_savings' %}" class="bg-[#4b7f8c] text-white px-6 py-3 rounded-lg hover:bg-[#355f6c]">Agregar Ahorro</a>
-        <a href="{% url 'transaction_list' %}" class="bg-[#abebc6] text-gray-800 px-6 py-3 rounded-lg hover:bg-teal-200">Historial</a>
+        <a href="{% url 'transaction_list' %}" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">Ver Transacciones</a>
     </div>
 </div>
 {% endblock %}
