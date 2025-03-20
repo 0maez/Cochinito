@@ -1,0 +1,16 @@
+{% if messages %}
+    {% for message in messages %}
+        <div class="bg-red-500 text-white p-2 rounded mb-4">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+{% load custom_filters %}
+<h1>Bienvenido, {{ request.user.username }} a tus recursos educativos</h1>
+{% for modulo in modulos %}
+    <a href="{% url 'module_detail' modulo.id %}" 
+       class="{% if progreso|get_item:modulo.id %}completado{% else %}pendiente{% endif %}">
+       {{ modulo.titulo }} - {% if progreso|get_item:modulo.id %}✔ Completado{% else %}❌ Pendiente{% endif %}
+    </a>
+{% endfor %}

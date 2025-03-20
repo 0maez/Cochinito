@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
@@ -7,7 +8,7 @@ from django.db import models
 from django.db.models import Sum, Q
 from django.db.models.functions import TruncMonth
 from .forms import RegisterForm, IncomeForm, BasicExpenseForm, WishExpenseForm, SavingsInvestmentForm, BudgetForm, TransactionForm, ReminderForm
-from .models import IncomeSource, BasicExpense, WishExpense, SavingsInvestment, Budget, Transaction, Reminder
+from .models import IncomeSource, BasicExpense, WishExpense, SavingsInvestment, Budget, Transaction, Reminder, Modulo, ProgresoUsuario
 from decimal import Decimal
 import csv
 import datetime
@@ -15,6 +16,8 @@ from io import BytesIO
 from django.http import JsonResponse, HttpResponse
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+from django.shortcuts import render, get_object_or_404, redirect
+
 
 def home(request):
     return render(request, "finance/home.html")
@@ -441,3 +444,37 @@ def export_pdf(request):
     response.write(pdf)
     
     return response
+
+@login_required
+def lista_modulos(request):
+    modulos = Modulo.objects.all().order_by("orden")
+    progreso = {p.modulo.id: p.completado for p in ProgresoUsuario.objects.filter(usuario=request.user)}
+    
+    return render(request, "recursos_educativos/module_list.html", {"modulos": modulos, "progreso": progreso})
+
+@login_required
+def detalle_modulo(request, modulo_id):
+    modulo = get_object_or_404(Modulo, id=modulo_id)
+    progreso, _ = ProgresoUsuario.objects.get_or_create(usuario=request.user, modulo=modulo)
+
+    # Verificar si ha completado el anterior
+    modulo_anterior = Modulo.objects.filter(orden=modulo.orden - 1).first()
+    if modulo_anterior:
+        progreso_anterior = ProgresoUsuario.objects.filter(usuario=request.user, modulo=modulo_anterior, completado=True).exists()
+        if not progreso_anterior:
+            messages.error(request, "Error: Debes completar el módulo anterior antes de acceder a este.")
+            return redirect("module_list")  # Redirige a la lista de módulos
+
+    return render(request, "recursos_educativos/module_detail.html", {"modulo": modulo, "progreso": progreso})
+
+@login_required
+def completar_modulo(request, modulo_id):
+    modulo = get_object_or_404(Modulo, id=modulo_id)
+    progreso, _ = ProgresoUsuario.objects.get_or_create(usuario=request.user, modulo=modulo)
+    progreso.completado = True
+    progreso.save()
+    
+    siguiente_modulo = Modulo.objects.filter(orden=modulo.orden + 1).first()
+    if siguiente_modulo:
+        return redirect("module_detail", modulo_id=siguiente_modulo.id)
+    return render(request, "recursos_educativos/finished.html")

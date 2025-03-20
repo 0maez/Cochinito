@@ -41,4 +41,7 @@ urlpatterns = [
     path('transactions/update/<int:pk>/', TransactionUpdateView.as_view(), name='update_transaction'),
     path('transactions/delete/<int:pk>/', TransactionDeleteView.as_view(), name='delete_transaction'),
     path('finance/summary/', views.summary, name='summary'),
+    path("recursos_educativos/", views.lista_modulos, name="module_list"),
+    path("modulo/<int:modulo_id>/", views.detalle_modulo, name="module_detail"),
+    path("completar-modulo/<int:modulo_id>/", views.completar_modulo, name="completar_modulo"),
 ]

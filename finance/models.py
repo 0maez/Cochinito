@@ -190,3 +190,30 @@ class Resource(models.Model):
 
     def __str__(self):
         return self.title
+    
+class Modulo(models.Model):
+    titulo = models.CharField(max_length=255)
+    descripcion = models.TextField()
+    video_titulo = models.CharField(max_length=255)
+    video_url = models.URLField()
+    ejercicio = models.TextField()
+    orden = models.IntegerField(unique=True)  # Controla el orden de los módulos
+
+    def __str__(self):
+        return self.titulo
+
+class TerminoBasico(models.Model):
+    modulo = models.ForeignKey(Modulo, related_name="terminos", on_delete=models.CASCADE)
+    termino = models.CharField(max_length=255)
+    descripcion = models.TextField()
+
+    def __str__(self):
+        return f"{self.termino} ({self.modulo.titulo})"
+
+class ProgresoUsuario(models.Model):
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    modulo = models.ForeignKey(Modulo, on_delete=models.CASCADE)
+    completado = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return f"{self.usuario.username} - {self.modulo.titulo} - {'Completado' if self.completado else 'Pendiente'}"    
