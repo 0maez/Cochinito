@@ -1,3 +1,5 @@
+<!-- finance/templates/finance/dashboard.html -->
+
 {% extends "finance/base.html" %}
 
 {% block content %}
@@ -5,10 +7,22 @@
     <h2 class="text-center text-2xl font-semibold text-gray-800 mb-6">¡Bienvenido/a, {{ user.username }}!</h2>
     <h2 class="text-center text-2xl font-semibold text-gray-800 mb-6">Mis Finanzas</h2>
 
-    <!-- Cuadro Presupuesto Total -->
+    <!-- Cuadro Presupuesto Total con Botón de Editar/Crear -->
     <div class="bg-white shadow-lg rounded-lg p-6 mb-6">
-        <h4 class="text-lg font-bold text-gray-800">Presupuesto Total</h4>
-        <p class="text-2xl font-semibold text-primary">${{ user_budget.total_amount|floatformat:2 }}</p>
+        <div class="flex justify-between items-center">
+            <div>
+                <h4 class="text-lg font-bold text-gray-800">Presupuesto Total</h4>
+                {% if user_budget %}
+                    <p class="text-2xl font-semibold text-primary">${{ user_budget.total_amount|floatformat:2 }}</p>
+                {% else %}
+                    <p class="text-2xl font-semibold text-gray-500">No hay presupuesto activo</p>
+                {% endif %}
+            </div>
+            <a href="{% if user_budget %}{% url 'edit_budget' %}{% else %}{% url 'create_budget' %}{% endif %}" 
+               class="bg-[#4b7f8c] text-white px-6 py-3 rounded-lg hover:bg-[#355f6c] transition-all">
+                {% if user_budget %}Editar Presupuesto{% else %}Crear Presupuesto{% endif %}
+            </a>
+        </div>
     </div>
 
     <!-- Cuadro Saldo Actual -->
@@ -71,24 +85,24 @@
         <p class="text-gray-700"><strong>Disponible:</strong> ${{ available_for_basic_expenses|floatformat:2 }}</p>
         <p class="text-gray-700"><strong>Gastado:</strong> ${{ spent_on_basic|floatformat:2 }} ({{ percentage_basic|floatformat:0 }}%)</p>
 
-    <!-- Barra de Progreso para Gastos Básicos -->
-    <div class="relative pt-1">
-        <div class="flex mb-2 items-center justify-between">
-            <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-teal-600 bg-teal-200">
-                Progreso
-            </span>
-            <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-teal-600 bg-teal-200">
-                {{ percentage_basic|floatformat:0 }}%
-            </span>
-        </div>
-        <div class="mb-2">
-            <div class="flex mb-2">
-                <div class="w-full bg-gray-200 rounded-full h-2.5">
-                    <div class="bg-[#abebc6] h-2.5 rounded-full" style="width: {{ percentage_basic|floatformat:0 }}%; max-width: 100%;"></div>
+        <!-- Barra de Progreso para Gastos Básicos -->
+        <div class="relative pt-1">
+            <div class="flex mb-2 items-center justify-between">
+                <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-teal-600 bg-teal-200">
+                    Progreso
+                </span>
+                <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-teal-600 bg-teal-200">
+                    {{ percentage_basic|floatformat:0 }}%
+                </span>
+            </div>
+            <div class="mb-2">
+                <div class="flex mb-2">
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="bg-[#abebc6] h-2.5 rounded-full" style="width: {{ percentage_basic|floatformat:0 }}%; max-width: 100%;"></div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
         {% if exceeded_basic %}
         <div class="mt-3 bg-yellow-100 p-3 text-yellow-600 rounded-lg">
@@ -103,24 +117,24 @@
         <p class="text-gray-700"><strong>Disponible:</strong> ${{ available_for_wish_expenses|floatformat:2 }}</p>
         <p class="text-gray-700"><strong>Gastado:</strong> ${{ spent_on_wish|floatformat:2 }} ({{ percentage_wish|floatformat:0 }}%)</p>
 
-    <!-- Barra de Progreso para Deseos -->
-    <div class="relative pt-1">
-        <div class="flex mb-2 items-center justify-between">
-            <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-teal-600 bg-teal-200">
-                Progreso
-            </span>
-            <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-teal-600 bg-teal-200">
-                {{ percentage_wish|floatformat:0 }}%
-            </span>
-        </div>
-        <div class="mb-2">
-            <div class="flex mb-2">
-                <div class="w-full bg-gray-200 rounded-full h-2.5">
-                    <div class="bg-[#abebc6] h-2.5 rounded-full" style="width: {{ percentage_wish|floatformat:0 }}%; max-width: 100%;"></div>
+        <!-- Barra de Progreso para Deseos -->
+        <div class="relative pt-1">
+            <div class="flex mb-2 items-center justify-between">
+                <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-teal-600 bg-teal-200">
+                    Progreso
+                </span>
+                <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-teal-600 bg-teal-200">
+                    {{ percentage_wish|floatformat:0 }}%
+                </span>
+            </div>
+            <div class="mb-2">
+                <div class="flex mb-2">
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="bg-[#abebc6] h-2.5 rounded-full" style="width: {{ percentage_wish|floatformat:0 }}%; max-width: 100%;"></div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
         {% if exceeded_wish %}
         <div class="mt-3 bg-yellow-100 p-3 text-yellow-600 rounded-lg">
@@ -139,24 +153,24 @@
             {% endfor %}
         </ul>
 
-    <!-- Barra de Progreso para Ahorros -->
-    <div class="relative pt-1">
-        <div class="flex mb-2 items-center justify-between">
-            <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-teal-600 bg-teal-200">
-                Progreso
-            </span>
-            <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-teal-600 bg-teal-200">
-                {{ percentage_savings|floatformat:0 }}%
-            </span>
-        </div>
-        <div class="mb-2">
-            <div class="flex mb-2">
-                <div class="w-full bg-gray-200 rounded-full h-2.5">
-                    <div class="bg-[#abebc6] h-2.5 rounded-full" style="width: {{ percentage_savings|floatformat:0 }}%; max-width: 100%;"></div>
+        <!-- Barra de Progreso para Ahorros -->
+        <div class="relative pt-1">
+            <div class="flex mb-2 items-center justify-between">
+                <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-teal-600 bg-teal-200">
+                    Progreso
+                </span>
+                <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-teal-600 bg-teal-200">
+                    {{ percentage_savings|floatformat:0 }}%
+                </span>
+            </div>
+            <div class="mb-2">
+                <div class="flex mb-2">
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="bg-[#abebc6] h-2.5 rounded-full" style="width: {{ percentage_savings|floatformat:0 }}%; max-width: 100%;"></div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
         {% if percentage_savings >= 100 %}
         <div class="mt-3 bg-green-100 p-3 text-green-600 rounded-lg">

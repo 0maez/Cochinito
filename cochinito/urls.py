@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from finance import views
-from finance.views import IncomeCreateView, ExpenseCreateView, SavingsCreateView, TransactionUpdateView, TransactionDeleteView, TransactionListView, summary
+from finance.views import IncomeCreateView, ExpenseCreateView, SavingsCreateView, TransactionUpdateView, TransactionDeleteView, TransactionListView, summary, BudgetUpdateView, BudgetCreateView
 
 
 urlpatterns = [
@@ -44,4 +44,6 @@ urlpatterns = [
     path("recursos_educativos/", views.lista_modulos, name="module_list"),
     path("modulo/<int:modulo_id>/", views.detalle_modulo, name="module_detail"),
     path("completar-modulo/<int:modulo_id>/", views.completar_modulo, name="completar_modulo"),
+    path('finance/edit_budget/', BudgetUpdateView.as_view(), name='edit_budget'),
+    path('finance/create_budget/', BudgetCreateView.as_view(), name='create_budget'),
 ]

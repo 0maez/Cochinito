@@ -1,0 +1,28 @@
+{% extends "finance/base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="text-center text-2xl font-semibold text-gray-800 mb-6">¡Bienvenido/a, {{ user.username }}!</h2>
+    <h2 class="text-center text-2xl font-semibold text-gray-800 mb-6">Mis Finanzas</h2>
+
+    <!-- Cuadro Presupuesto Total con Botón de Editar/Crear -->
+    <div class="bg-white shadow-lg rounded-lg p-6 mb-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h4 class="text-lg font-bold text-gray-800">Presupuesto Total</h4>
+                {% if user_budget %}
+                    <p class="text-2xl font-semibold text-primary">${{ user_budget.total_amount|floatformat:2 }}</p>
+                {% else %}
+                    <p class="text-2xl font-semibold text-gray-500">No hay presupuesto activo</p>
+                {% endif %}
+            </div>
+            <a href="{% if user_budget %}{% url 'edit_budget' %}{% else %}{% url 'create_budget' %}{% endif %}" 
+               class="bg-[#4b7f8c] text-white px-6 py-3 rounded-lg hover:bg-[#355f6c] transition-all">
+                {% if user_budget %}Editar Presupuesto{% else %}Crear Presupuesto{% endif %}
+            </a>
+        </div>
+    </div>
+
+    <!-- Resto del contenido del dashboard... -->
+</div>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Historial de Presupuestos</h2>
+<ul>
+    {% for budget in budgets %} 
+        <li>
+            <strong>{{ budget.created_at|date:"d/m/Y" }}:</strong> ${{ budget.total_amount|floatformat:2 }}
+            <a href="{% url 'view_budget' budget.id %}">Ver Detalles</a>
+        </li>
+    {% endfor %}
+</ul>
+
+{% endblock %}
+
+

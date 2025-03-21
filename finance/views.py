@@ -86,14 +86,20 @@ def savings_investment_form(request):
 
 @login_required
 def dashboard(request):
-    user_budget = Budget.objects.filter(user=request.user).first()
-    transactions = Transaction.objects.filter(user=request.user).order_by('-created_at')
+    # Obtener el presupuesto activo del usuario
+    user_budget = Budget.objects.filter(user=request.user, is_active=True).first()
+
+    # Filtrar transacciones por el presupuesto activo
+    transactions = Transaction.objects.filter(user=request.user, budget=user_budget).order_by('-created_at') if user_budget else []
+
+    # Obtener fuentes de ingresos y recordatorios
     income_sources = IncomeSource.objects.filter(user=request.user)
     reminders = Reminder.objects.filter(user=request.user, is_paid=False)
 
-    basic_expenses = Transaction.objects.filter(user=request.user, basic_expense__isnull=False)
-    wish_expenses = Transaction.objects.filter(user=request.user, wish_expense__isnull=False)
-    savings_investments = Transaction.objects.filter(user=request.user, savings_investment__isnull=False)
+    # Filtrar transacciones por tipo (gastos básicos, deseos, ahorros/inversiones) y presupuesto activo
+    basic_expenses = Transaction.objects.filter(user=request.user, basic_expense__isnull=False, budget=user_budget) if user_budget else []
+    wish_expenses = Transaction.objects.filter(user=request.user, wish_expense__isnull=False, budget=user_budget) if user_budget else []
+    savings_investments = Transaction.objects.filter(user=request.user, savings_investment__isnull=False, budget=user_budget) if user_budget else []
 
     # Definir valores predeterminados en caso de que no haya presupuesto
     available_for_basic_expenses = Decimal(0)
@@ -106,22 +112,30 @@ def dashboard(request):
 
     if user_budget:
         total_amount = user_budget.total_amount
+
+        # Calcular el total gastado en cada categoría
         spent_on_basic = sum(expense.amount for expense in basic_expenses)
         spent_on_wish = sum(expense.amount for expense in wish_expenses)
         spent_on_savings = sum(expense.amount for expense in savings_investments)
 
+        # Calcular el saldo disponible para cada categoría
         available_for_basic_expenses = user_budget.basic_expenses - spent_on_basic
         available_for_wish_expenses = user_budget.wish_expenses - spent_on_wish
         available_for_savings_expenses = user_budget.savings_investments - spent_on_savings
 
+    # Calcular porcentajes de uso
     percentage_basic = (spent_on_basic / user_budget.basic_expenses) * 100 if user_budget and user_budget.basic_expenses > 0 else 0
     percentage_wish = (spent_on_wish / user_budget.wish_expenses) * 100 if user_budget and user_budget.wish_expenses > 0 else 0
     percentage_savings = (spent_on_savings / user_budget.savings_investments) * 100 if user_budget and user_budget.savings_investments > 0 else 0
 
+    # Verificar si el saldo está por debajo del 20% del presupuesto total
     is_balance_low = user_budget.current_balance <= (user_budget.total_amount * Decimal('0.20')) if user_budget else False
+
+    # Verificar si se ha excedido el presupuesto en gastos básicos o deseos
     exceeded_basic = available_for_basic_expenses < 0
     exceeded_wish = available_for_wish_expenses < 0
 
+    # Contexto para la plantilla
     context = {
         "user_budget": user_budget,
         "transactions": transactions,
@@ -217,9 +231,19 @@ class IncomeCreateView(CreateView):
     def form_valid(self, form):
         form.instance.user = self.request.user  
         form.instance.transaction_type = 'income' 
-        budget = Budget.objects.filter(user=self.request.user).first()  
+        budget = Budget.objects.filter(user=self.request.user).first()
+
         if budget:
-            form.instance.budget = budget  
+            form.instance.budget = budget
+            # Actualizar el presupuesto con el nuevo ingreso
+            budget.total_amount += form.instance.amount
+            budget.current_balance += form.instance.amount
+            # Reiniciar los cálculos de las categorías
+            budget.basic_expenses = budget.total_amount * Decimal('0.5')
+            budget.wish_expenses = budget.total_amount * Decimal('0.3')
+            budget.savings_investments = budget.total_amount * Decimal('0.2')
+            budget.save()
+
         return super().form_valid(form)
     
 class ExpenseCreateView(CreateView):
@@ -367,6 +391,28 @@ def summary(request):
     }
     return render(request, 'finance/summary.html', context)
 
+class BudgetUpdateView(UpdateView):
+    model = Budget
+    form_class = BudgetForm
+    template_name = 'finance/edit_budget.html'
+    success_url = reverse_lazy('dashboard')
+
+    def get_object(self, queryset=None):
+        # Obtener el presupuesto activo del usuario
+        return Budget.objects.filter(user=self.request.user, is_active=True).first()
+
+class BudgetCreateView(CreateView):
+    model = Budget
+    form_class = BudgetForm
+    template_name = 'finance/edit_budget.html'
+    success_url = reverse_lazy('dashboard')
+
+    def form_valid(self, form):
+        # Asignar el usuario al presupuesto
+        form.instance.user = self.request.user
+        form.instance.is_active = True  # Marcar como activo
+        return super().form_valid(form)
+
 
 @login_required
 def export_csv(request):
@@ -478,3 +524,9 @@ def completar_modulo(request, modulo_id):
     if siguiente_modulo:
         return redirect("module_detail", modulo_id=siguiente_modulo.id)
     return render(request, "recursos_educativos/finished.html")
+
+@login_required
+def budget_history(request):
+    # Obtener todos los presupuestos del usuario (activos e inactivos)
+    budgets = Budget.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'finance/budget_history.html', {'budgets': budgets})
