@@ -5,6 +5,15 @@
 {% block content %}
 {% load static custom_filters %}
 
+<!-- Mensajes de error o éxito -->
+{% if messages %}
+    {% for message in messages %}
+        <div class="bg-red-500 text-white p-3 rounded mb-4 container mx-auto">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
 <!-- Banner Section -->
 <section class="relative bg-[#abebc6] text-white py-24 overflow-hidden rounded-xl shadow-lg mx-4 md:mx-0 mb-8">
     <!-- Imagen de fondo -->
