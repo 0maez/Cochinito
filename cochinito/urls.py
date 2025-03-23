@@ -40,4 +40,7 @@ urlpatterns = [
     path('transactions/', TransactionListView.as_view(), name='transaction_list'),
     path('transactions/update/<int:pk>/', TransactionUpdateView.as_view(), name='update_transaction'),
     path('transactions/delete/<int:pk>/', TransactionDeleteView.as_view(), name='delete_transaction'),
+    path('finance/budget-list/', views.budget_list, name='budget_list'),  # URL para budget_list
+    path('finance/edit-budget/<int:budget_id>/', views.edit_budget, name='edit_budget'),
+    path('finance/set-active-budget/<int:budget_id>/', views.set_active_budget, name='set_active_budget'),
 ]

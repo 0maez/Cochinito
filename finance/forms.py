@@ -86,11 +86,20 @@ class BudgetForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)  
         super().__init__(*args, **kwargs)
         self.fields['total_amount'].widget.attrs.update({
             'class': 'form-control border-2 border-[#4b7f8c] rounded-lg p-2 w-full',
             'placeholder': 'Ingresa tu presupuesto inicial'
         })
+
+    def save(self, commit=True):
+        budget = super().save(commit=False)
+        if self.user:
+            budget.user = self.user 
+        if commit:
+            budget.save()
+        return budget
 
 class ReminderForm(forms.ModelForm):
     class Meta:

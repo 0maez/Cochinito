@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
@@ -9,7 +9,6 @@ from decimal import Decimal
 
 def home(request):
     return render(request, "finance/home.html")
-
 
 def register(request):
     if request.method == 'POST':
@@ -74,33 +73,31 @@ def savings_investment_form(request):
 
 @login_required
 def dashboard(request):
-    user_budget = Budget.objects.filter(user=request.user).first()
-    transactions = Transaction.objects.filter(user=request.user).order_by('-created_at')
+    user_budget = Budget.objects.filter(user=request.user, is_active=True).first() 
+    transactions = Transaction.objects.filter(user=request.user, budget=user_budget).order_by('-created_at')
     income_sources = IncomeSource.objects.filter(user=request.user)
     reminders = Reminder.objects.filter(user=request.user, is_paid=False)
 
-    basic_expenses = Transaction.objects.filter(user=request.user, basic_expense__isnull=False)
-    wish_expenses = Transaction.objects.filter(user=request.user, wish_expense__isnull=False)
-    savings_investments = Transaction.objects.filter(user=request.user, savings_investment__isnull=False)
+    basic_expenses = transactions.filter(basic_expense__isnull=False)
+    wish_expenses = transactions.filter(wish_expense__isnull=False)
+    savings_investments = transactions.filter(savings_investment__isnull=False)
 
     available_for_basic_expenses = Decimal(0)
     available_for_wish_expenses = Decimal(0)
-    available_for_savings_expenses = Decimal(0)
+    available_for_savings_investments = Decimal(0)
     spent_on_basic = Decimal(0)
     spent_on_wish = Decimal(0)
     spent_on_savings = Decimal(0)
     total_amount = Decimal(0)
 
-    if user_budget:
-        total_amount = user_budget.total_amount
-        available_for_basic_expenses = user_budget.basic_expenses - sum(expense.amount for expense in basic_expenses)
-        available_for_wish_expenses = user_budget.wish_expenses - sum(expense.amount for expense in wish_expenses)
-        available_for_savings_investments = user_budget.available_savings - sum(expense.amount for expense in savings_investments)
-        
+    total_amount = user_budget.total_amount
+    available_for_basic_expenses = user_budget.basic_expenses - sum(expense.amount for expense in basic_expenses)
+    available_for_wish_expenses = user_budget.wish_expenses - sum(expense.amount for expense in wish_expenses)
+    available_for_savings_investments = user_budget.available_savings - sum(expense.amount for expense in savings_investments)
 
-        spent_on_basic = sum(expense.amount for expense in basic_expenses)
-        spent_on_wish = sum(expense.amount for expense in wish_expenses)
-        spent_on_savings = sum(expense.amount for expense in savings_investments)
+    spent_on_basic = sum(expense.amount for expense in basic_expenses)
+    spent_on_wish = sum(expense.amount for expense in wish_expenses)
+    spent_on_savings = sum(expense.amount for expense in savings_investments)
 
 
     percentage_basic = (spent_on_basic / user_budget.basic_expenses) * 100 if user_budget.basic_expenses > 0 else 0
@@ -110,6 +107,7 @@ def dashboard(request):
     is_balance_low = user_budget.current_balance <= (user_budget.total_amount * Decimal('0.20'))
     exceeded_basic = available_for_basic_expenses < 0
     exceeded_wish = available_for_wish_expenses < 0
+    exceeded_savings = available_for_savings_investments < 0
     
 
     context = {
@@ -130,22 +128,22 @@ def dashboard(request):
         "is_balance_low": is_balance_low,
         "exceeded_basic": exceeded_basic,
         "exceeded_wish": exceeded_wish,
+        "exceeded_savings": exceeded_savings,
     }
     return render(request, "finance/dashboard.html", context)
 
 @login_required
 def create_budget(request):
     if request.method == 'POST':
-        form = BudgetForm(request.POST)
+        form = BudgetForm(request.POST, user=request.user)
         if form.is_valid():
             budget = form.save(commit=False)
             budget.user = request.user
-            budget.current_balance = budget.total_amount  
-            budget.current_balance = budget.total_amount  
+            budget.current_balance = budget.total_amount   
             budget.save()
             return redirect('income_form')  
     else:
-        form = BudgetForm()
+        form = BudgetForm(user=request.user)
     return render(request, 'finance/create_budget.html', {'form': form})
 
 
@@ -286,3 +284,28 @@ def about_us(request):
 
 def features(request):
     return render(request, 'finance/features.html')
+
+@login_required
+def budget_list(request):
+    budgets = Budget.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'finance/budget_list.html', {'budgets': budgets})
+
+@login_required
+def set_active_budget(request, budget_id):
+    budget = get_object_or_404(Budget, id=budget_id, user=request.user)
+    Budget.objects.filter(user=request.user).update(is_active=False)
+    budget.is_active = True
+    budget.save()
+    return redirect('dashboard')
+
+@login_required
+def edit_budget(request, budget_id):
+    budget = get_object_or_404(Budget, id=budget_id, user=request.user)
+    if request.method == 'POST':
+        form = BudgetForm(request.POST, instance=budget, user=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('dashboard')
+    else:
+        form = BudgetForm(instance=budget, user=request.user)
+    return render(request, 'finance/edit_budget.html', {'form': form})

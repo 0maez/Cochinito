@@ -42,7 +42,7 @@ class SavingsInvestment(models.Model):
         return self.name
 
 class Budget(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)  
     current_balance = models.DecimalField(max_digits=10, decimal_places=2)
     basic_expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -50,15 +50,20 @@ class Budget(models.Model):
     savings_investments = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
         total = Decimal(self.total_amount)
-        if self.current_balance is None:
-            self.current_balance = total
-
+        
+        if not self.pk:
+            if self.current_balance is None:
+                self.current_balance = total
         self.basic_expenses = total * Decimal('0.5')
         self.wish_expenses = total * Decimal('0.3')
         self.savings_investments = total * Decimal('0.2')
+
+        Budget.objects.filter(user=self.user).update(is_active=False)
+        self.is_active = True  
 
         if self.current_balance <= total * Decimal('0.15'):
             print(f"⚠️ Alerta: Tu saldo está por debajo del 15% del presupuesto inicial ({total * Decimal('0.15'):.2f})")
