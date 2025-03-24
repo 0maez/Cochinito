@@ -25,7 +25,7 @@ class Command(BaseCommand):
                     f"Hola {reminder.user.username},\n\n"
                     f"Este es un recordatorio de que tu pago de '{reminder.name}' "
                     f"vence el {reminder.date}. No olvides realizar tu pago a tiempo.\n\n"
-                    f"Gracias por usar Cochinito 🐷."
+                    f"Gracias por usar AlcanciaApp 🐷."
                 )
                 
                 send_mail(

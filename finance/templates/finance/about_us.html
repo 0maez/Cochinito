@@ -1,6 +1,78 @@
 {% extends "finance/base.html" %}
 
+{% block title %}AlcanciaApp - Sobre Nosotros{% endblock %}
+
 {% block content %}
-<h1 class="text-2xl font-bold">Sobre Nosotros</h1>
-<p>Esta aplicación está diseñada para ayudar a estudiantes a gestionar sus finanzas personales...</p>
+{% load static %}
+
+<!-- Hero Section -->
+<section class="relative bg-[#abebc6] text-white py-24 overflow-hidden rounded-xl shadow-lg mx-4 md:mx-0">
+    <div class="absolute inset-0 rounded-xl opacity-15"
+         style="background-image: url('{% static 'images/hero-image.jpg' %}');
+                background-size: cover;
+                background-position: center;
+                filter: brightness(0.8);
+                z-index: 2;">
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-r from-[#abebc6] via-[#7acdaf] to-[#4b7f8c] rounded-xl opacity-90"></div>
+    <div class="relative z-10 container mx-auto text-center">
+        <h1 class="text-5xl font-bold leading-tight mb-4">Conoce AlcanciaApp</h1>
+        <p class="text-lg max-w-xl mx-auto mb-6">
+            Nuestra misión es ayudarte a gestionar tus finanzas personales de forma sencilla, eficiente y accesible para todos.
+        </p>
+    </div>
+</section>
+
+<!-- About Section -->
+<section class="rounded-xl py-16 bg-white">
+    <div class="container mx-auto text-center">
+        <h2 class="text-3xl font-semibold mb-8 text-gray-800">¿Qué es AlcanciaApp?</h2>
+        <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+            AlcanciaApp es una herramienta diseñada para ayudarte a organizar tus ingresos, gastos y ahorros en un solo lugar. Nuestro objetivo es empoderarte con el control total de tus finanzas personales para que puedas tomar decisiones informadas y mejorar tu bienestar económico.
+        </p>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="rounded-xl bg-gray-100 py-16">
+    <div class="container mx-auto text-center">
+        <h2 class="text-3xl font-semibold mb-8 text-gray-800">¿Cómo funciona?</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="p-6 bg-white rounded-2xl shadow-md hover:shadow-xl transition duration-300 transform hover:scale-105">
+                <h3 class="text-lg font-bold mb-2 text-[#4b7f8c]">1. Regístrate</h3>
+                <p class="text-gray-600">Crea tu cuenta de manera sencilla y empieza a gestionar tus finanzas.</p>
+            </div>
+            <div class="p-6 bg-white rounded-2xl shadow-md hover:shadow-xl transition duration-300 transform hover:scale-105">
+                <h3 class="text-lg font-bold mb-2 text-[#4b7f8c]">2. Organiza tus Finanzas</h3>
+                <p class="text-gray-600">Registra ingresos y gastos para mantener el control de tu dinero.</p>
+            </div>
+            <div class="p-6 bg-white rounded-2xl shadow-md hover:shadow-xl transition duration-300 transform hover:scale-105">
+                <h3 class="text-lg font-bold mb-2 text-[#4b7f8c]">3. Toma Decisiones Inteligentes</h3>
+                <p class="text-gray-600">Visualiza tu progreso y mejora tu salud financiera con nuestra ayuda.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="relative bg-[#abebc6] text-white py-16 rounded-2xl mt-8 overflow-hidden shadow-lg mx-4 md:mx-0">
+    <div class="absolute inset-0 rounded-2xl">
+        <img src="{% static 'images/call-to-action.jpg' %}" alt="Call to Action" class="w-full h-full object-cover rounded-2xl opacity-20">
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-r from-[#abebc6] via-[#7acdaf] to-[#4b7f8c] opacity-70 rounded-2xl"></div>
+    <div class="relative z-10 container mx-auto text-center">
+        <h2 class="text-3xl font-bold mb-4 text-white transition-all duration-300 transform hover:scale-105">
+            ¿Listo para tomar control de tus finanzas?
+        </h2>
+        <p class="text-lg mb-6 text-gray-100 max-w-xl mx-auto">
+            Empieza ahora y simplifica la gestión de tu dinero con AlcanciaApp.
+        </p>
+        <a href="{% url 'register' %}"
+           class="bg-white text-[#4b7f8c] px-8 py-3 rounded-full text-xl font-semibold 
+                  hover:bg-[#e0f7e9] transition duration-300 transform hover:scale-110 shadow-lg">
+            Crear Cuenta
+        </a>
+    </div>
+</section>
+
 {% endblock %}

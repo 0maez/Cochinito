@@ -3,7 +3,6 @@ from django.core.mail import send_mail
 from django.conf import settings
 from decimal import Decimal
 from finance.models import Budget
-from django.db.models import Sum
 
 class Command(BaseCommand):
     help = "Envía alertas por correo y notificaciones internas sobre el estado del presupuesto."
@@ -21,7 +20,7 @@ class Command(BaseCommand):
                 message = (
                     f"Hola {user.username},\n\n"
                     f"Tu saldo actual ({budget.current_balance:.2f}) es menor al 20% de tu presupuesto total ({budget.total_amount:.2f}).\n"
-                    "Se recomienda revisar tus gastos y ahorrar."
+                    "¡Recuerda que es momento de ahorrar!."
                 )
                 send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=False)
                 alerts.append("Saldo total inferior al 20%")
@@ -43,10 +42,22 @@ class Command(BaseCommand):
                 message = (
                     f"Hola {user.username},\n\n"
                     f"Los gastos de deseo han excedido lo asignado ({budget.total_amount * Decimal('0.3'):.2f}).\n"
-                    "Revisa y controla tus gastos de deseo."
+                    "¡Controla tus deseos!"
                 )
                 send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=False)
                 alerts.append("Gastos de deseo excedidos")
+
+            # 4. Meta de ahorro cumplida
+            expected_savings = budget.total_amount * Decimal('0.20')  # 20% de su presupuesto
+            if budget.savings_investments >= expected_savings:  # Si los ahorros disponibles son iguales o mayores que el 20%
+                subject = "¡Felicidades por cumplir tu meta de ahorro!"
+                message = (
+                    f"Hola {user.username},\n\n"
+                    f"¡Felicidades! Has alcanzado tu meta de ahorro de {expected_savings:.2f}.\n"
+                    "Sigue con este buen hábito financiero y mantén tu estabilidad económica."
+                )
+                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=False)
+                alerts.append("Meta de ahorro alcanzada")
 
             if alerts:
                 self.stdout.write(self.style.SUCCESS(f"Alertas enviadas a {user.email}: {', '.join(alerts)}"))

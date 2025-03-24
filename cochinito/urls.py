@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from finance import views
-from finance.views import IncomeCreateView, ExpenseCreateView, SavingsCreateView, TransactionUpdateView, TransactionDeleteView, TransactionListView
+from finance.views import IncomeCreateView, ExpenseCreateView, SavingsCreateView, TransactionUpdateView, TransactionDeleteView, TransactionListView, summary
 
 
 urlpatterns = [
@@ -40,4 +40,11 @@ urlpatterns = [
     path('transactions/', TransactionListView.as_view(), name='transaction_list'),
     path('transactions/update/<int:pk>/', TransactionUpdateView.as_view(), name='update_transaction'),
     path('transactions/delete/<int:pk>/', TransactionDeleteView.as_view(), name='delete_transaction'),
+    path('finance/budget-list/', views.budget_list, name='budget_list'),  # URL para budget_list
+    path('finance/edit-budget/<int:budget_id>/', views.edit_budget, name='edit_budget'),
+    path('finance/set-active-budget/<int:budget_id>/', views.set_active_budget, name='set_active_budget'),
+    path('finance/summary/', views.summary, name='summary'),
+    path("recursos_educativos/", views.module_list, name="module_list"),
+    path('modulo/<int:module_id>/', views.module_detail, name='module_detail'),
+    path("complete_module/<int:module_id>/", views.complete_module, name="complete_module"),
 ]

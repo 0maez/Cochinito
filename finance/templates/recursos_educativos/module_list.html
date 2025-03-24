@@ -1,0 +1,64 @@
+{% extends "finance/base.html" %}
+
+{% block title %}Recursos Educativos - Módulos{% endblock %}
+
+{% block content %}
+{% load static custom_filters %}
+
+<!-- Mensajes de error o éxito -->
+{% if messages %}
+    {% for message in messages %}
+        <div class="bg-red-500 text-white p-3 rounded mb-4 container mx-auto">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<!-- Banner Section -->
+<section class="relative bg-[#abebc6] text-white py-24 overflow-hidden rounded-xl shadow-lg mx-4 md:mx-0 mb-8">
+    <!-- Imagen de fondo -->
+    <div class="absolute inset-0 rounded-xl opacity-15"
+         style="background-image: url('{% static 'images/alcancia.jpg' %}');
+                background-size: cover;
+                background-position: center;
+                filter: brightness(0.8);
+                z-index: 2;">
+    </div>
+    <!-- Degradado sutil con transparencia -->
+    <div class="absolute inset-0 bg-gradient-to-r from-[#abebc6] via-[#7acdaf] to-[#4b7f8c] rounded-xl"></div>
+    <!-- Contenido principal -->
+    <div class="relative z-10 container mx-auto text-center">
+        <h1 class="text-5xl font-bold leading-tight mb-4">
+            Bienvenido, {{ request.user.username }} a tus recursos educativos
+        </h1>
+    </div>
+</section>
+
+<!-- Lista de módulos -->
+<div class="container mx-auto px-4 py-8">
+  <h2 class="text-3xl font-bold mb-6 text-center">Módulos de aprendizaje</h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {% for module in modules %}
+      <div class="bg-white rounded-xl shadow-md hover:shadow-xl transition duration-300 transform hover:scale-105 p-6">
+        <a href="{% url 'module_detail' module.id %}" class="block">
+          <h3 class="text-2xl font-semibold text-gray-800">{{ module.title }}</h3>
+          <p class="mt-2 text-gray-600">
+            {% if progress|get_item:module.id %}
+              <span class="text-green-600 font-bold">Completado ✔</span>
+            {% else %}
+              <span class="text-red-600 font-bold">Pendiente ❌</span>
+            {% endif %}
+          </p>
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Botón de Volver -->
+  <div class="mt-8 text-center">
+    <a href="{% url 'dashboard' %}" class="inline-block bg-[#4b7f8c] text-white px-8 py-3 rounded-full text-xl font-semibold hover:bg-[#355f6c] transition duration-300 transform hover:scale-105 shadow-lg">
+      Volver
+    </a>
+  </div>
+</div>
+{% endblock %}

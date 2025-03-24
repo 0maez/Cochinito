@@ -1,6 +1,86 @@
 {% extends "finance/base.html" %}
 
+{% block title %}AlcanciaApp - Características{% endblock %}
+
 {% block content %}
-<h1 class="text-2xl font-bold">Características</h1>
-<p>La aplicación te permite agregar ingresos, controlar gastos, crear recordatorios...</p>
+{% load static %}
+
+<!-- Hero Section -->
+<section class="relative bg-[#abebc6] text-white py-24 overflow-hidden rounded-xl shadow-lg mx-4 md:mx-0">
+    <div class="absolute inset-0 rounded-xl opacity-15"
+         style="background-image: url('{% static 'images/hero-image.jpg' %}');
+                background-size: cover;
+                background-position: center;
+                filter: brightness(0.8);
+                z-index: 2;">
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-r from-[#abebc6] via-[#7acdaf] to-[#4b7f8c] rounded-xl">
+    </div>
+    <div class="relative z-10 container mx-auto text-center">
+        <h1 class="text-5xl font-bold leading-tight mb-4">Descubre lo que AlcanciaApp tiene para ti</h1>
+        <p class="text-lg max-w-xl mx-auto mb-6">
+            Herramientas avanzadas para que gestiones tu dinero de forma eficiente y sin complicaciones.
+        </p>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-16 bg-white">
+    <div class="container mx-auto text-center">
+        <h2 class="text-3xl font-semibold mb-8 text-gray-800">Características Principales</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-gray-100 p-6 rounded-2xl shadow-lg hover:shadow-xl transition duration-300 transform hover:scale-105">
+                <h3 class="text-xl font-bold mb-4 text-[#4b7f8c]">📊 Panel de Control Intuitivo</h3>
+                <p class="text-gray-600">Visualiza tus ingresos, gastos y saldo disponible en un solo lugar.</p>
+            </div>
+            <div class="bg-gray-100 p-6 rounded-2xl shadow-lg hover:shadow-xl transition duration-300 transform hover:scale-105">
+                <h3 class="text-xl font-bold mb-4 text-[#4b7f8c]">💸 Registro de Transacciones</h3>
+                <p class="text-gray-600">Registra fácilmente cada movimiento financiero y clasifícalo según tus necesidades.</p>
+            </div>
+            <div class="bg-gray-100 p-6 rounded-2xl shadow-lg hover:shadow-xl transition duration-300 transform hover:scale-105">
+                <h3 class="text-xl font-bold mb-4 text-[#4b7f8c]">📅 Planificación Financiera</h3>
+                <p class="text-gray-600">Configura presupuestos y metas de ahorro para alcanzar tus objetivos.</p>
+            </div>
+            <div class="bg-gray-100 p-6 rounded-2xl shadow-lg hover:shadow-xl transition duration-300 transform hover:scale-105">
+                <h3 class="text-xl font-bold mb-4 text-[#4b7f8c]">🔔 Notificaciones y Alertas</h3>
+                <p class="text-gray-600">Recibe recordatorios sobre pagos pendientes y fechas clave.</p>
+            </div>
+            <div class="bg-gray-100 p-6 rounded-2xl shadow-lg hover:shadow-xl transition duration-300 transform hover:scale-105">
+                <h3 class="text-xl font-bold mb-4 text-[#4b7f8c]">📈 Reportes y Análisis</h3>
+                <p class="text-gray-600">Genera gráficos detallados sobre tu situación financiera.</p>
+            </div>
+            <div class="bg-gray-100 p-6 rounded-2xl shadow-lg hover:shadow-xl transition duration-300 transform hover:scale-105">
+                <h3 class="text-xl font-bold mb-4 text-[#4b7f8c]">🔐 Seguridad y Privacidad</h3>
+                <p class="text-gray-600">Tus datos están protegidos con cifrado avanzado.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="relative bg-[#abebc6] text-white py-16 rounded-2xl mt-8 overflow-hidden shadow-lg mx-4 md:mx-0">
+    <div class="absolute inset-0 rounded-2xl opacity-15"
+         style="background-image: url('{% static 'images/hero-image.jpg' %}');
+                background-size: cover;
+                background-position: center;
+                filter: brightness(0.8);
+                z-index: 2;">
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-r from-[#abebc6] via-[#7acdaf] to-[#4b7f8c] opacity-70 rounded-2xl">
+    </div>
+    <div class="relative z-10 container mx-auto text-center">
+        <h2 class="text-3xl font-bold mb-4 text-white transition-all duration-300 transform hover:scale-105">
+            Empieza a gestionar tus finanzas hoy mismo
+        </h2>
+        <p class="text-lg mb-6 text-gray-100 max-w-xl mx-auto">
+            Regístrate gratis y toma el control de tu economía de manera fácil y segura.
+        </p>
+        <a href="{% url 'register' %}"
+           class="bg-white text-[#4b7f8c] px-8 py-3 rounded-full text-xl font-semibold
+                  hover:bg-[#e0f7e9] transition duration-300 transform hover:scale-110 shadow-lg">
+            Crear Cuenta
+        </a>
+    </div>
+</section>
+
 {% endblock %}
