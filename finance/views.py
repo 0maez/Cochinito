@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
@@ -8,7 +8,7 @@ from django.db import models
 from django.db.models import Sum, Q
 from django.db.models.functions import TruncMonth
 from .forms import RegisterForm, IncomeForm, BasicExpenseForm, WishExpenseForm, SavingsInvestmentForm, BudgetForm, TransactionForm, ReminderForm
-from .models import IncomeSource, BasicExpense, WishExpense, SavingsInvestment, Budget, Transaction, Reminder, Modulo, ProgresoUsuario
+from .models import IncomeSource, BasicExpense, WishExpense, SavingsInvestment, Budget, Transaction, Reminder, Module, UserProgress
 from decimal import Decimal
 import csv
 import datetime
@@ -21,7 +21,6 @@ from django.shortcuts import render, get_object_or_404, redirect
 
 def home(request):
     return render(request, "finance/home.html")
-
 
 def register(request):
     if request.method == 'POST':
@@ -86,33 +85,36 @@ def savings_investment_form(request):
 
 @login_required
 def dashboard(request):
-    user_budget = Budget.objects.filter(user=request.user).first()
-    transactions = Transaction.objects.filter(user=request.user).order_by('-created_at')
+    user_budget = Budget.objects.filter(user=request.user, is_active=True).first() 
+    transactions = Transaction.objects.filter(user=request.user, budget=user_budget).order_by('-created_at')
     income_sources = IncomeSource.objects.filter(user=request.user)
     reminders = Reminder.objects.filter(user=request.user, is_paid=False)
 
-    basic_expenses = Transaction.objects.filter(user=request.user, basic_expense__isnull=False)
-    wish_expenses = Transaction.objects.filter(user=request.user, wish_expense__isnull=False)
-    savings_investments = Transaction.objects.filter(user=request.user, savings_investment__isnull=False)
+    basic_expenses = transactions.filter(basic_expense__isnull=False)
+    wish_expenses = transactions.filter(wish_expense__isnull=False)
+    savings_investments = transactions.filter(savings_investment__isnull=False)
 
     # Definir valores predeterminados en caso de que no haya presupuesto
     available_for_basic_expenses = Decimal(0)
     available_for_wish_expenses = Decimal(0)
-    available_for_savings_expenses = Decimal(0)
+    available_for_savings_investments = Decimal(0)
     spent_on_basic = Decimal(0)
     spent_on_wish = Decimal(0)
     spent_on_savings = Decimal(0)
     total_amount = Decimal(0)
 
-    if user_budget:
-        total_amount = user_budget.total_amount
-        spent_on_basic = sum(expense.amount for expense in basic_expenses)
-        spent_on_wish = sum(expense.amount for expense in wish_expenses)
-        spent_on_savings = sum(expense.amount for expense in savings_investments)
+    total_amount = user_budget.total_amount
+    available_for_basic_expenses = user_budget.basic_expenses - sum(expense.amount for expense in basic_expenses)
+    available_for_wish_expenses = user_budget.wish_expenses - sum(expense.amount for expense in wish_expenses)
+    available_for_savings_investments = user_budget.available_savings - sum(expense.amount for expense in savings_investments)
 
-        available_for_basic_expenses = user_budget.basic_expenses - spent_on_basic
-        available_for_wish_expenses = user_budget.wish_expenses - spent_on_wish
-        available_for_savings_expenses = user_budget.savings_investments - spent_on_savings
+    spent_on_basic = sum(expense.amount for expense in basic_expenses)
+    spent_on_wish = sum(expense.amount for expense in wish_expenses)
+    spent_on_savings = sum(expense.amount for expense in savings_investments)
+
+    available_for_basic_expenses = user_budget.basic_expenses - spent_on_basic
+    available_for_wish_expenses = user_budget.wish_expenses - spent_on_wish
+    available_for_savings_expenses = user_budget.savings_investments - spent_on_savings
 
     percentage_basic = (spent_on_basic / user_budget.basic_expenses) * 100 if user_budget and user_budget.basic_expenses > 0 else 0
     percentage_wish = (spent_on_wish / user_budget.wish_expenses) * 100 if user_budget and user_budget.wish_expenses > 0 else 0
@@ -121,6 +123,8 @@ def dashboard(request):
     is_balance_low = user_budget.current_balance <= (user_budget.total_amount * Decimal('0.20')) if user_budget else False
     exceeded_basic = available_for_basic_expenses < 0
     exceeded_wish = available_for_wish_expenses < 0
+    exceeded_savings = available_for_savings_investments < 0
+    
 
     context = {
         "user_budget": user_budget,
@@ -140,6 +144,7 @@ def dashboard(request):
         "is_balance_low": is_balance_low,
         "exceeded_basic": exceeded_basic,
         "exceeded_wish": exceeded_wish,
+        "exceeded_savings": exceeded_savings,
     }
     
     return render(request, "finance/dashboard.html", context)
@@ -148,16 +153,15 @@ def dashboard(request):
 @login_required
 def create_budget(request):
     if request.method == 'POST':
-        form = BudgetForm(request.POST)
+        form = BudgetForm(request.POST, user=request.user)
         if form.is_valid():
             budget = form.save(commit=False)
             budget.user = request.user
-            budget.current_balance = budget.total_amount  
-            budget.current_balance = budget.total_amount  
+            budget.current_balance = budget.total_amount   
             budget.save()
             return redirect('income_form')  
     else:
-        form = BudgetForm()
+        form = BudgetForm(user=request.user)
     return render(request, 'finance/create_budget.html', {'form': form})
 
 
@@ -300,6 +304,30 @@ def features(request):
     return render(request, 'finance/features.html')
 
 @login_required
+def budget_list(request):
+    budgets = Budget.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'finance/budget_list.html', {'budgets': budgets})
+
+@login_required
+def set_active_budget(request, budget_id):
+    budget = get_object_or_404(Budget, id=budget_id, user=request.user)
+    Budget.objects.filter(user=request.user).update(is_active=False)
+    budget.is_active = True
+    budget.save()
+    return redirect('dashboard')
+
+@login_required
+def edit_budget(request, budget_id):
+    budget = get_object_or_404(Budget, id=budget_id, user=request.user)
+    if request.method == 'POST':
+        form = BudgetForm(request.POST, instance=budget, user=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('dashboard')
+    else:
+        form = BudgetForm(instance=budget, user=request.user)
+    return render(request, 'finance/edit_budget.html', {'form': form})
+@login_required
 def summary(request):
     user_budget = Budget.objects.filter(user=request.user).first()
     transactions = Transaction.objects.filter(user=request.user)
@@ -420,7 +448,6 @@ def export_pdf(request):
     p.drawString(100, 750, "Resumen Financiero")
     y = 730
     
-    # Imprimir cada transacción
     for transaction in transactions:
         line = f"{transaction.created_at.strftime('%Y-%m-%d')} | " \
                f"{transaction.income_source or 'Ingreso'} | " \
@@ -430,7 +457,6 @@ def export_pdf(request):
                f"${transaction.amount}"
         p.drawString(50, y, line)
         y -= 20
-        # Si el espacio vertical es insuficiente, crear una nueva página
         if y < 50:
             p.showPage()
             p.setFont("Helvetica", 12)
@@ -446,35 +472,33 @@ def export_pdf(request):
     return response
 
 @login_required
-def lista_modulos(request):
-    modulos = Modulo.objects.all().order_by("orden")
-    progreso = {p.modulo.id: p.completado for p in ProgresoUsuario.objects.filter(usuario=request.user)}
-    
-    return render(request, "recursos_educativos/module_list.html", {"modulos": modulos, "progreso": progreso})
+def module_list(request):
+    modules = Module.objects.all().order_by("order")  
+    progress = {p.module.id: p.completed for p in UserProgress.objects.filter(user=request.user)} 
+    return render(request, "recursos_educativos/module_list.html", {"modules": modules, "progress": progress})
 
 @login_required
-def detalle_modulo(request, modulo_id):
-    modulo = get_object_or_404(Modulo, id=modulo_id)
-    progreso, _ = ProgresoUsuario.objects.get_or_create(usuario=request.user, modulo=modulo)
+def module_detail(request, module_id):
+    module = get_object_or_404(Module, id=module_id)  
+    progress, _ = UserProgress.objects.get_or_create(user=request.user, module=module)  
+    previous_module = Module.objects.filter(order=module.order - 1).first()  
+    if previous_module:
+        previous_progress = UserProgress.objects.filter(user=request.user, module=previous_module, completed=True).exists()  
+        if not previous_progress:
+            messages.error(request, "Error: You must complete the previous module before accessing this one.")  
+            return redirect("module_list")  
 
-    # Verificar si ha completado el anterior
-    modulo_anterior = Modulo.objects.filter(orden=modulo.orden - 1).first()
-    if modulo_anterior:
-        progreso_anterior = ProgresoUsuario.objects.filter(usuario=request.user, modulo=modulo_anterior, completado=True).exists()
-        if not progreso_anterior:
-            messages.error(request, "Error: Debes completar el módulo anterior antes de acceder a este.")
-            return redirect("module_list")  # Redirige a la lista de módulos
+    return render(request, "recursos_educativos/module_detail.html", {"module": module, "progress": progress})
 
-    return render(request, "recursos_educativos/module_detail.html", {"modulo": modulo, "progreso": progreso})
 
 @login_required
-def completar_modulo(request, modulo_id):
-    modulo = get_object_or_404(Modulo, id=modulo_id)
-    progreso, _ = ProgresoUsuario.objects.get_or_create(usuario=request.user, modulo=modulo)
-    progreso.completado = True
-    progreso.save()
+def complete_module(request, module_id):
+    module = get_object_or_404(Module, id=module_id)  
+    progress, _ = UserProgress.objects.get_or_create(user=request.user, module=module)  
+    progress.completed = True  
+    progress.save()
     
-    siguiente_modulo = Modulo.objects.filter(orden=modulo.orden + 1).first()
-    if siguiente_modulo:
-        return redirect("module_detail", modulo_id=siguiente_modulo.id)
+    next_module = Module.objects.filter(order=module.order + 1).first()  
+    if next_module:
+        return redirect("module_detail", module_id=next_module.id)
     return render(request, "recursos_educativos/finished.html")
