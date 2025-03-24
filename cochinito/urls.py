@@ -45,6 +45,6 @@ urlpatterns = [
     path('finance/set-active-budget/<int:budget_id>/', views.set_active_budget, name='set_active_budget'),
     path('finance/summary/', views.summary, name='summary'),
     path("recursos_educativos/", views.module_list, name="module_list"),
-    path("modulo/<int:modulo_id>/", views.module_detail, name="module_detail"),
-    path("completar-modulo/<int:modulo_id>/", views.complete_module, name="completar_modulo"),
+    path('modulo/<int:module_id>/', views.module_detail, name='module_detail'),
+    path("complete_module/<int:module_id>/", views.complete_module, name="complete_module"),
 ]

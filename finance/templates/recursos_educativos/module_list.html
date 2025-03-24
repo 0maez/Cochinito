@@ -28,7 +28,9 @@
     <div class="absolute inset-0 bg-gradient-to-r from-[#abebc6] via-[#7acdaf] to-[#4b7f8c] rounded-xl"></div>
     <!-- Contenido principal -->
     <div class="relative z-10 container mx-auto text-center">
-        <h1 class="text-5xl font-bold leading-tight mb-4">Bienvenido, {{ request.user.username }} a tus recursos educativos</h1>
+        <h1 class="text-5xl font-bold leading-tight mb-4">
+            Bienvenido, {{ request.user.username }} a tus recursos educativos
+        </h1>
     </div>
 </section>
 
@@ -36,12 +38,12 @@
 <div class="container mx-auto px-4 py-8">
   <h2 class="text-3xl font-bold mb-6 text-center">Módulos de aprendizaje</h2>
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    {% for modulo in modulos %}
+    {% for module in modules %}
       <div class="bg-white rounded-xl shadow-md hover:shadow-xl transition duration-300 transform hover:scale-105 p-6">
-        <a href="{% url 'module_detail' modulo.id %}" class="block">
-          <h3 class="text-2xl font-semibold text-gray-800">{{ modulo.titulo }}</h3>
+        <a href="{% url 'module_detail' module.id %}" class="block">
+          <h3 class="text-2xl font-semibold text-gray-800">{{ module.title }}</h3>
           <p class="mt-2 text-gray-600">
-            {% if progreso|get_item:modulo.id %}
+            {% if progress|get_item:module.id %}
               <span class="text-green-600 font-bold">Completado ✔</span>
             {% else %}
               <span class="text-red-600 font-bold">Pendiente ❌</span>

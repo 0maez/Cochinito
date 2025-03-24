@@ -473,32 +473,30 @@ def export_pdf(request):
 
 @login_required
 def module_list(request):
-    modules = Module.objects.all().order_by("order")  
-    progress = {p.module.id: p.completed for p in UserProgress.objects.filter(user=request.user)} 
+    modules = Module.objects.all().order_by("order")
+    progress = {p.module.id: p.completed for p in UserProgress.objects.filter(user=request.user)}
     return render(request, "recursos_educativos/module_list.html", {"modules": modules, "progress": progress})
 
 @login_required
 def module_detail(request, module_id):
-    module = get_object_or_404(Module, id=module_id)  
-    progress, _ = UserProgress.objects.get_or_create(user=request.user, module=module)  
-    previous_module = Module.objects.filter(order=module.order - 1).first()  
+    module = get_object_or_404(Module, id=module_id)
+    progress, _ = UserProgress.objects.get_or_create(user=request.user, module=module)
+    previous_module = Module.objects.filter(order=module.order - 1).first()
     if previous_module:
-        previous_progress = UserProgress.objects.filter(user=request.user, module=previous_module, completed=True).exists()  
-        if not previous_progress:
-            messages.error(request, "Error: You must complete the previous module before accessing this one.")  
-            return redirect("module_list")  
-
+        previous_completed = UserProgress.objects.filter(user=request.user, module=previous_module, completed=True).exists()
+        if not previous_completed:
+            messages.error(request, "Error: Debes completar el módulo anterior antes de acceder a este.")
+            return redirect("module_list")
     return render(request, "recursos_educativos/module_detail.html", {"module": module, "progress": progress})
-
 
 @login_required
 def complete_module(request, module_id):
-    module = get_object_or_404(Module, id=module_id)  
-    progress, _ = UserProgress.objects.get_or_create(user=request.user, module=module)  
-    progress.completed = True  
+    module = get_object_or_404(Module, id=module_id)
+    progress, _ = UserProgress.objects.get_or_create(user=request.user, module=module)
+    progress.completed = True
     progress.save()
-    
-    next_module = Module.objects.filter(order=module.order + 1).first()  
+
+    next_module = Module.objects.filter(order=module.order + 1).first()
     if next_module:
         return redirect("module_detail", module_id=next_module.id)
     return render(request, "recursos_educativos/finished.html")

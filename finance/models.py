@@ -208,7 +208,7 @@ class Module(models.Model):
     def __str__(self):
         return self.title
     def __str__(self):
-        return self.titulo
+        return self.title
 
 class BasicTerm(models.Model):
     module = models.ForeignKey(Module, related_name="terms", on_delete=models.CASCADE)  

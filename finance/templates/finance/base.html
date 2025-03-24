@@ -32,10 +32,6 @@
                     <a href="/finance/summary" class="text-gray-700 hover:text-[#4b7f8c] py-2">Resumen</a>
                     <a href="{% url 'module_list' %}" class="text-gray-700 hover:text-[#4b7f8c] py-2">Educación financiera</a>
 
-                    <!-- Nuevo botón "Mi perfil" -->
-                    <a href="" class="bg-[#4b7f8c] text-white py-2 px-4 rounded-full hover:bg-bg-gray-700">
-                        Mi perfil
-                    </a>
 
                     <form action="{% url 'logout' %}" method="POST" class="inline">
                         {% csrf_token %}
@@ -73,10 +69,6 @@
                 <a href="/finance/summary" class="text-gray-700 hover:text-[#4b7f8c] py-2">Resumen</a>
                 <a href="{% url 'module_list' %}" class="text-gray-700 hover:text-[#4b7f8c] py-2">Educación financiera</a>
 
-                <!-- Nuevo botón "Mi perfil" en versión móvil -->
-                <a href="" class="bg-[#4b7f8c] text-white py-2 px-4 rounded-full hover:bg-blue-700 w-full text-center">
-                    Mi perfil
-                </a>
 
                 <form action="{% url 'logout' %}" method="POST" class="inline">
                     {% csrf_token %}
