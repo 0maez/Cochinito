@@ -65,26 +65,25 @@ class Budget(models.Model):
         Budget.objects.filter(user=self.user).update(is_active=False)
         self.is_active = True  
 
-        if self.current_balance <= total * Decimal('0.15'):
-            print(f"⚠️ Alerta: Tu saldo está por debajo del 15% del presupuesto inicial ({total * Decimal('0.15'):.2f})")
+        if self.current_balance <= total * Decimal('0.20'):
+            print(f"⚠️ Alerta: Tu saldo está por debajo del 20% del presupuesto inicial ({total * Decimal('0.20'):.2f})")
 
         super().save(*args, **kwargs)
 
     def update_balance_with_income(self, amount):
         self.current_balance += Decimal(amount)
-        self.total_amount += Decimal(amount)
-        self.save()
+        self.save(update_fields=['current_balance'])
 
     def update_balance_with_expense(self, amount):
         self.current_balance -= Decimal(amount)
-        self.save()
+        self.save(update_fields=['current_balance'])
     
     def update_balance_with_savings(self, amount):
         self.current_balance -= Decimal(amount)
-        self.save()
+        self.save(update_fields=['current_balance'])
 
     def is_balance_low(self):
-        threshold = self.total_amount * Decimal('0.15')
+        threshold = self.total_amount * Decimal('0.20')
         return self.current_balance <= threshold
     
     def total_basic_spent(self):
@@ -156,7 +155,6 @@ def update_budget_on_transaction(sender, instance, created, **kwargs):
         budget = instance.budget
         if instance.transaction_type == 'income':
             budget.current_balance += instance.amount
-            budget.total_amount = budget.current_balance
         elif instance.transaction_type == 'expense':
             budget.current_balance -= instance.amount
         elif instance.transaction_type == 'savings':
@@ -168,7 +166,6 @@ def update_budget_on_transaction_delete(sender, instance, **kwargs):
     budget = instance.budget
     if instance.transaction_type == 'income':
         budget.current_balance -= instance.amount
-        budget.total_amount -= instance.amount
     elif instance.transaction_type == 'expense':
         budget.current_balance += instance.amount
     elif instance.transaction_type == 'savings':

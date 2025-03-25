@@ -4,19 +4,18 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
-from django.db import models 
 from django.db.models import Sum, Q
 from django.db.models.functions import TruncMonth
-from .forms import RegisterForm, IncomeForm, BasicExpenseForm, WishExpenseForm, SavingsInvestmentForm, BudgetForm, TransactionForm, ReminderForm
+from .forms import RegisterForm, IncomeForm, BasicExpenseForm, WishExpenseForm, SavingsInvestmentForm, BudgetForm, TransactionForm, ReminderForm, SummaryFilterForm
 from .models import IncomeSource, BasicExpense, WishExpense, SavingsInvestment, Budget, Transaction, Reminder, Module, UserProgress
 from decimal import Decimal
 import csv
-import datetime
+from datetime import timedelta, timezone
 from io import BytesIO
 from django.http import JsonResponse, HttpResponse
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
-from django.shortcuts import render, get_object_or_404, redirect
+
 
 
 def home(request):
@@ -26,11 +25,12 @@ def register(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
-            user = form.save()  
-            login(request, user) 
+            user = form.save()
+            login(request, user)
+            request.session['from_registration'] = True
             return redirect('create_budget')  
     else:
-        form = RegisterForm()  
+        form = RegisterForm()
     return render(request, 'finance/register.html', {'form': form})
 
 def income_form(request):
@@ -114,7 +114,7 @@ def dashboard(request):
 
     available_for_basic_expenses = user_budget.basic_expenses - spent_on_basic
     available_for_wish_expenses = user_budget.wish_expenses - spent_on_wish
-    available_for_savings_expenses = user_budget.savings_investments - spent_on_savings
+    available_for_savings_investments = user_budget.savings_investments - spent_on_savings
 
     percentage_basic = (spent_on_basic / user_budget.basic_expenses) * 100 if user_budget and user_budget.basic_expenses > 0 else 0
     percentage_wish = (spent_on_wish / user_budget.wish_expenses) * 100 if user_budget and user_budget.wish_expenses > 0 else 0
@@ -132,7 +132,7 @@ def dashboard(request):
         "total_amount": total_amount,
         "available_for_basic_expenses": available_for_basic_expenses,
         "available_for_wish_expenses": available_for_wish_expenses,
-        "available_for_savings_expenses": available_for_savings_expenses,
+        "available_for_savings_investments": available_for_savings_investments,
         "income_sources": income_sources,
         "basic_expenses": basic_expenses,
         "wish_expenses": wish_expenses,
@@ -157,11 +157,18 @@ def create_budget(request):
         if form.is_valid():
             budget = form.save(commit=False)
             budget.user = request.user
-            budget.current_balance = budget.total_amount   
+            budget.current_balance = form.cleaned_data['total_amount']
             budget.save()
-            return redirect('income_form')  
+        
+            if 'from_registration' in request.session:
+                del request.session['from_registration']  
+                return redirect('income_form')
+            
+            messages.success(request, "Nuevo presupuesto creado exitosamente")
+            return redirect('dashboard')
     else:
         form = BudgetForm(user=request.user)
+    
     return render(request, 'finance/create_budget.html', {'form': form})
 
 
@@ -327,10 +334,42 @@ def edit_budget(request, budget_id):
     else:
         form = BudgetForm(instance=budget, user=request.user)
     return render(request, 'finance/edit_budget.html', {'form': form})
+
 @login_required
 def summary(request):
     user_budget = Budget.objects.filter(user=request.user).first()
     transactions = Transaction.objects.filter(user=request.user)
+    form = SummaryFilterForm(request.GET or None, user=request.user)
+
+    if form.is_valid():
+        # Filtro por fechas
+        date_range = form.cleaned_data['date_range']
+        
+        if date_range == 'custom':
+            if form.cleaned_data['start_date'] and form.cleaned_data['end_date']:
+                transactions = transactions.filter(
+                    created_at__date__gte=form.cleaned_data['start_date'],
+                    created_at__date__lte=form.cleaned_data['end_date']
+                )
+        elif date_range != 'all':
+            days = int(date_range)
+            start_date = timezone.now() - timedelta(days=days)
+            transactions = transactions.filter(created_at__gte=start_date)
+        
+        # Filtro por tipo de transacción
+        transaction_type = form.cleaned_data['transaction_type']
+        if transaction_type != 'all':
+            transactions = transactions.filter(transaction_type=transaction_type)
+        
+        # Filtros por categorías
+        if form.cleaned_data.get('income_source'):
+            transactions = transactions.filter(income_source=form.cleaned_data['income_source'])
+        if form.cleaned_data.get('basic_expense'):
+            transactions = transactions.filter(basic_expense=form.cleaned_data['basic_expense'])
+        if form.cleaned_data.get('wish_expense'):
+            transactions = transactions.filter(wish_expense=form.cleaned_data['wish_expense'])
+        if form.cleaned_data.get('savings_investment'):
+            transactions = transactions.filter(savings_investment=form.cleaned_data['savings_investment'])
 
     # Calcular totales y convertirlos a float
     total_income = float(transactions.filter(income_source__isnull=False).aggregate(Sum('amount'))['amount__sum'] or 0)
@@ -392,34 +431,60 @@ def summary(request):
         'monthly_data': formatted_monthly_data,
         'budget_distribution': budget_distribution,
         'net_balance': net_balance,
+        'form': form,
     }
     return render(request, 'finance/summary.html', context)
 
 
 @login_required
 def export_csv(request):
-    """Exporta las transacciones filtradas en formato CSV."""
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="financial_summary.csv"'
     
     writer = csv.writer(response)
-    writer.writerow(['Fecha', 'Origen de Ingreso', 'Gasto Básico', 'Deseo', 'Ahorro/Inversión', 'Monto'])
-    
-    # Filtrar las transacciones del usuario
+    writer.writerow(['Fecha', 'Tipo', 'Origen de Ingreso', 'Gasto Básico', 'Deseo', 'Ahorro/Inversión', 'Monto'])
+
     transactions = Transaction.objects.filter(user=request.user)
-    # (Opcional) Filtrar por fechas si se pasan en la query string
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
-    if start_date and end_date:
-        transactions = transactions.filter(created_at__range=[start_date, end_date])
+    form = SummaryFilterForm(request.GET, user=request.user)
     
-    for transaction in transactions:
+    if form.is_valid():
+        date_range = form.cleaned_data['date_range']
+        
+        if date_range == 'custom':
+            if form.cleaned_data['start_date'] and form.cleaned_data['end_date']:
+                transactions = transactions.filter(
+                    created_at__date__gte=form.cleaned_data['start_date'],
+                    created_at__date__lte=form.cleaned_data['end_date']
+                )
+        elif date_range != 'all':
+            days = int(date_range)
+            start_date = timezone.now() - timedelta(days=days)
+            transactions = transactions.filter(created_at__gte=start_date)
+        
+        # Filtro por tipo de transacción
+        transaction_type = form.cleaned_data['transaction_type']
+        if transaction_type != 'all':
+            transactions = transactions.filter(transaction_type=transaction_type)
+        
+        # Filtros por categorías
+        if form.cleaned_data.get('income_source'):
+            transactions = transactions.filter(income_source=form.cleaned_data['income_source'])
+        if form.cleaned_data.get('basic_expense'):
+            transactions = transactions.filter(basic_expense=form.cleaned_data['basic_expense'])
+        if form.cleaned_data.get('wish_expense'):
+            transactions = transactions.filter(wish_expense=form.cleaned_data['wish_expense'])
+        if form.cleaned_data.get('savings_investment'):
+            transactions = transactions.filter(savings_investment=form.cleaned_data['savings_investment'])
+    
+    # Escribir datos filtrados
+    for transaction in transactions.order_by('-created_at'):
         writer.writerow([
             transaction.created_at.strftime('%Y-%m-%d'),
-            transaction.income_source if transaction.income_source else '',
-            transaction.basic_expense if transaction.basic_expense else '',
-            transaction.wish_expense if transaction.wish_expense else '',
-            transaction.savings_investment if transaction.savings_investment else '',
+            transaction.get_transaction_type_display(),
+            str(transaction.income_source) if transaction.income_source else '',
+            str(transaction.basic_expense) if transaction.basic_expense else '',
+            str(transaction.wish_expense) if transaction.wish_expense else '',
+            str(transaction.savings_investment) if transaction.savings_investment else '',
             transaction.amount
         ])
     
@@ -436,26 +501,79 @@ def export_pdf(request):
     p = canvas.Canvas(buffer, pagesize=letter)
     p.setFont("Helvetica", 12)
     
-    # Filtrar las transacciones del usuario
+    # Aplicar los mismos filtros que en export_csv
     transactions = Transaction.objects.filter(user=request.user)
-    # (Opcional) Filtrar por fechas si se pasan en la query string
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
-    if start_date and end_date:
-        transactions = transactions.filter(created_at__range=[start_date, end_date])
+    form = SummaryFilterForm(request.GET, user=request.user)
     
-    # Encabezado del PDF
-    p.drawString(100, 750, "Resumen Financiero")
-    y = 730
+    if form.is_valid():
+        # Filtro por fechas
+        date_range = form.cleaned_data['date_range']
+        
+        if date_range == 'custom':
+            if form.cleaned_data['start_date'] and form.cleaned_data['end_date']:
+                transactions = transactions.filter(
+                    created_at__date__gte=form.cleaned_data['start_date'],
+                    created_at__date__lte=form.cleaned_data['end_date']
+                )
+        elif date_range != 'all':
+            days = int(date_range)
+            start_date = timezone.now() - timedelta(days=days)
+            transactions = transactions.filter(created_at__gte=start_date)
+        
+        # Filtro por tipo de transacción
+        transaction_type = form.cleaned_data['transaction_type']
+        if transaction_type != 'all':
+            transactions = transactions.filter(transaction_type=transaction_type)
+        
+        # Filtros por categorías
+        if form.cleaned_data.get('income_source'):
+            transactions = transactions.filter(income_source=form.cleaned_data['income_source'])
+        if form.cleaned_data.get('basic_expense'):
+            transactions = transactions.filter(basic_expense=form.cleaned_data['basic_expense'])
+        if form.cleaned_data.get('wish_expense'):
+            transactions = transactions.filter(wish_expense=form.cleaned_data['wish_expense'])
+        if form.cleaned_data.get('savings_investment'):
+            transactions = transactions.filter(savings_investment=form.cleaned_data['savings_investment'])
     
-    for transaction in transactions:
-        line = f"{transaction.created_at.strftime('%Y-%m-%d')} | " \
-               f"{transaction.income_source or 'Ingreso'} | " \
-               f"{transaction.basic_expense or 'Gasto Básico'} | " \
-               f"{transaction.wish_expense or 'Deseo'} | " \
-               f"{transaction.savings_investment or 'Ahorro/Inversión'} | " \
-               f"${transaction.amount}"
-        p.drawString(50, y, line)
+    # Encabezado del PDF con información de filtros
+    p.drawString(100, 800, "Resumen Financiero - Filtros Aplicados")
+    p.drawString(100, 780, f"Fecha: {timezone.now().strftime('%Y-%m-%d %H:%M')}")
+    
+    if form.is_valid():
+        filter_info = []
+        if form.cleaned_data['date_range'] != 'all':
+            filter_info.append(f"Rango: {form.cleaned_data['date_range']}")
+        if form.cleaned_data['transaction_type'] != 'all':
+            filter_info.append(f"Tipo: {form.cleaned_data['transaction_type']}")
+        # Agregar más filtros si es necesario
+        
+        if filter_info:
+            p.drawString(100, 760, "Filtros: " + ", ".join(filter_info))
+    
+    # Tabla de transacciones
+    p.drawString(50, 730, "Fecha")
+    p.drawString(120, 730, "Tipo")
+    p.drawString(180, 730, "Descripción")
+    p.drawString(400, 730, "Monto")
+    p.line(50, 725, 550, 725)
+    
+    y = 710
+    for transaction in transactions.order_by('-created_at'):
+        description = ""
+        if transaction.income_source:
+            description = f"Ingreso: {transaction.income_source}"
+        elif transaction.basic_expense:
+            description = f"Gasto Básico: {transaction.basic_expense}"
+        elif transaction.wish_expense:
+            description = f"Deseo: {transaction.wish_expense}"
+        elif transaction.savings_investment:
+            description = f"Ahorro: {transaction.savings_investment}"
+        
+        p.drawString(50, y, transaction.created_at.strftime('%Y-%m-%d'))
+        p.drawString(120, y, transaction.get_transaction_type_display())
+        p.drawString(180, y, description)
+        p.drawString(400, y, f"${transaction.amount:.2f}")
+        
         y -= 20
         if y < 50:
             p.showPage()

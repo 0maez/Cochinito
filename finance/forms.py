@@ -137,3 +137,70 @@ class TransactionForm(forms.ModelForm):
             self.fields['income_source'].widget = forms.HiddenInput()
             self.fields['basic_expense'].widget = forms.HiddenInput()
             self.fields['wish_expense'].widget = forms.HiddenInput()  
+
+class SummaryFilterForm(forms.Form):
+    DATE_RANGES = [
+        ('all', 'Todo el período'),
+        ('30', 'Últimos 30 días'),
+        ('90', 'Últimos 3 meses'),
+        ('180', 'Últimos 6 meses'),
+        ('365', 'Último año'),
+        ('custom', 'Rango personalizado'),
+    ]
+    
+    TRANSACTION_TYPES = [
+        ('all', 'Todos los tipos'),
+        ('income', 'Solo ingresos'),
+        ('expense', 'Solo gastos'),
+        ('savings', 'Solo ahorros'),
+    ]
+    
+    date_range = forms.ChoiceField(
+        choices=DATE_RANGES,
+        initial='all',
+        label="Rango de fechas"
+    )
+    
+    start_date = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={'type': 'date'}),
+        label="Fecha inicial"
+    )
+    
+    end_date = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={'type': 'date'}),
+        label="Fecha final"
+    )
+    
+    transaction_type = forms.ChoiceField(
+        choices=TRANSACTION_TYPES,
+        initial='all',
+        label="Tipo de transacción"
+    )
+    
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        
+        if user:
+            self.fields['income_source'] = forms.ModelChoiceField(
+                queryset=IncomeSource.objects.filter(user=user),
+                required=False,
+                label="Fuente de ingreso"
+            )
+            self.fields['basic_expense'] = forms.ModelChoiceField(
+                queryset=BasicExpense.objects.filter(user=user),
+                required=False,
+                label="Gasto básico"
+            )
+            self.fields['wish_expense'] = forms.ModelChoiceField(
+                queryset=WishExpense.objects.filter(user=user),
+                required=False,
+                label="Deseo"
+            )
+            self.fields['savings_investment'] = forms.ModelChoiceField(
+                queryset=SavingsInvestment.objects.filter(user=user),
+                required=False,
+                label="Ahorro/Inversión"
+            )

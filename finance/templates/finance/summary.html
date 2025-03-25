@@ -4,10 +4,86 @@
 <div class="container mx-auto p-6 bg-gray-100 min-h-screen">
     <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Resumen Financiero</h1>
 
+    <!-- Filtros -->
+    <div class="bg-white p-6 rounded-2xl shadow-md mb-6">
+        <h2 class="text-lg font-semibold text-gray-700 mb-4">Filtros</h2>
+        <form method="get" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Rango de fechas -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Rango de fechas</label>
+                    {{ form.date_range }}
+                </div>
+                
+                <!-- Fechas personalizadas (se muestra solo cuando se selecciona "custom") -->
+                <div id="custom-dates" class="col-span-2 space-y-2" 
+                     style="display: {% if form.date_range.value == 'custom' %}block{% else %}none{% endif %};">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            {{ form.start_date.label_tag }}
+                            {{ form.start_date }}
+                        </div>
+                        <div>
+                            {{ form.end_date.label_tag }}
+                            {{ form.end_date }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Tipo de transacción -->
+                <div>
+                    {{ form.transaction_type.label_tag }}
+                    {{ form.transaction_type }}
+                </div>
+                
+                <!-- Categorías específicas (se muestran dinámicamente según el tipo) -->
+                <div id="income-filter" style="display: {% if form.transaction_type.value == 'income' %}block{% else %}none{% endif %};">
+                    {{ form.income_source.label_tag }}
+                    {{ form.income_source }}
+                </div>
+                
+                <div id="expense-filter" style="display: {% if form.transaction_type.value == 'expense' %}block{% else %}none{% endif %};">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            {{ form.basic_expense.label_tag }}
+                            {{ form.basic_expense }}
+                        </div>
+                        <div>
+                            {{ form.wish_expense.label_tag }}
+                            {{ form.wish_expense }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="savings-filter" style="display: {% if form.transaction_type.value == 'savings' %}block{% else %}none{% endif %};">
+                    {{ form.savings_investment.label_tag }}
+                    {{ form.savings_investment }}
+                </div>
+            </div>
+            
+            <div class="flex space-x-4">
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    Aplicar Filtros
+                </button>
+                <a href="{% url 'summary' %}" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">
+                    Limpiar Filtros
+                </a>
+            </div>
+        </form>
+    </div>
+<div class="container mx-auto p-6 bg-gray-100 min-h-screen">
+    <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Resumen Financiero</h1>
+
     <!-- Botones de exportación -->
     <div class="text-center mb-6">
-        <a href="{% url 'export_csv' %}" class="px-4 py-2 bg-blue-500 text-white rounded-md mr-4">Exportar CSV</a>
-        <a href="{% url 'export_pdf' %}" class="px-4 py-2 bg-green-500 text-white rounded-md">Exportar PDF</a>
+        <a href="{% url 'export_csv' %}?{{ request.GET.urlencode }}" class="btn btn-primary">
+            Exportar CSV
+        </a>
+        <a href="{% url 'export_pdf' %}?{{ request.GET.urlencode }}" class="btn btn-primary">
+            Exportar PDF
+        </a>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -26,6 +102,30 @@
         <canvas id="lineChart"></canvas>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Mostrar/ocultar fechas personalizadas
+        const dateRangeSelect = document.querySelector('select[name="date_range"]');
+        const customDatesDiv = document.getElementById('custom-dates');
+        
+        dateRangeSelect.addEventListener('change', function() {
+            customDatesDiv.style.display = this.value === 'custom' ? 'block' : 'none';
+        });
+        
+        // Mostrar/ocultar filtros de categorías según tipo de transacción
+        const transactionTypeSelect = document.querySelector('select[name="transaction_type"]');
+        const incomeFilter = document.getElementById('income-filter');
+        const expenseFilter = document.getElementById('expense-filter');
+        const savingsFilter = document.getElementById('savings-filter');
+        
+        transactionTypeSelect.addEventListener('change', function() {
+            incomeFilter.style.display = this.value === 'income' ? 'block' : 'none';
+            expenseFilter.style.display = this.value === 'expense' ? 'block' : 'none';
+            savingsFilter.style.display = this.value === 'savings' ? 'block' : 'none';
+        });
+    });
+    </script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
