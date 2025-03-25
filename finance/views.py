@@ -10,11 +10,12 @@ from .forms import RegisterForm, IncomeForm, BasicExpenseForm, WishExpenseForm, 
 from .models import IncomeSource, BasicExpense, WishExpense, SavingsInvestment, Budget, Transaction, Reminder, Module, UserProgress
 from decimal import Decimal
 import csv
-from datetime import timedelta, timezone
+from datetime import timedelta
 from io import BytesIO
 from django.http import JsonResponse, HttpResponse
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+from django.utils import timezone
 
 
 
@@ -353,7 +354,7 @@ def summary(request):
                 )
         elif date_range != 'all':
             days = int(date_range)
-            start_date = timezone.now() - timedelta(days=days)
+            start_date = timezone.now() - timedelta(days=days) 
             transactions = transactions.filter(created_at__gte=start_date)
         
         # Filtro por tipo de transacción

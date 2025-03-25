@@ -141,7 +141,7 @@ class Transaction(models.Model):
     basic_expense = models.ForeignKey('BasicExpense', on_delete=models.SET_NULL, null=True, blank=True)
     wish_expense = models.ForeignKey('WishExpense', on_delete=models.SET_NULL, null=True, blank=True)
     savings_investment = models.ForeignKey('SavingsInvestment', on_delete=models.SET_NULL, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(default=timezone.now)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
