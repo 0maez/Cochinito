@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}AlcanciaApp - Finanzas{% endblock %}</title>
+    <title>{% block title %}AlcancíApp - Finanzas{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/forms@0.5.2/dist/forms.min.js"></script>
 </head>
@@ -18,9 +18,9 @@
             <!-- Logo -->
             <div class="flex items-center space-x-3">
                 <a href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'home' %}{% endif %}">
-                    <img src="{% static 'finance/images/logo.png' %}" alt="AlcanciaApp Logo" class="h-10">
+                    <img src="{% static 'finance/images/logo.png' %}" alt="AlcancíApp Logo" class="h-10">
                 </a>
-                <span class="text-xl font-semibold text-[#4b7f8c]">AlcanciaApp</span>
+                <span class="text-xl font-semibold text-[#4b7f8c]">AlcancíApp</span>
             </div>
 
             <!-- Menú para escritorio -->
@@ -95,7 +95,7 @@
 
     <!-- Footer -->
     <footer class="bg-gray-900 text-center text-white py-4 mt-8">
-        <p>&copy; 2025 AlcanciaApp - Finanzas Personales para Estudiantes</p>
+        <p>&copy; 2025 AlcancíApp - Finanzas Personales para Estudiantes</p>
     </footer>
 
     <!-- Script para abrir/cerrar el menú hamburguesa -->

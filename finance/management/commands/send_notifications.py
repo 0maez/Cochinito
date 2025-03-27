@@ -10,32 +10,45 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         today = timezone.now().date()
-
-        # Buscar recordatorios de pago que vencen en 5 días o el mismo día
+        self.stdout.write(f"🕒 Iniciando envío de notificaciones - Fecha: {today}")
+        
+        start_date = today
+        end_date = today + timedelta(days=5)
+        
         reminders = Reminder.objects.filter(
-            date__in=[today, today + timedelta(days=5)],
+            date__gte=start_date,
+            date__lte=end_date,
             is_paid=False
         )
+        
+        self.stdout.write(f"🔍 Recordatorios encontrados: {reminders.count()}")
+        
+        if not reminders.exists():
+            self.stdout.write(self.style.WARNING("⚠️ No hay recordatorios pendientes"))
+            return
 
         for reminder in reminders:
-            user_email = reminder.user.email  # Asegúrate de que el usuario tiene un correo válido
-            if user_email:
-                subject = f"🔔 Recordatorio de pago: {reminder.name}"
-                message = (
-                    f"Hola {reminder.user.username},\n\n"
-                    f"Este es un recordatorio de que tu pago de '{reminder.name}' "
-                    f"vence el {reminder.date}. No olvides realizar tu pago a tiempo.\n\n"
-                    f"Gracias por usar AlcanciaApp 🐷."
-                )
-                
-                send_mail(
-                    subject,
-                    message,
-                    settings.EMAIL_HOST_USER,  # Remitente
-                    [user_email],  # Destinatario
-                    fail_silently=False,
-                )
+            user_email = reminder.user.email
+            if not user_email:
+                self.stdout.write(self.style.WARNING(f"⛔ Usuario {reminder.user.username} sin email"))
+                continue
 
-                self.stdout.write(self.style.SUCCESS(f"Correo enviado a {user_email} para el pago de {reminder.name}"))
-            else:
-                self.stdout.write(self.style.WARNING(f"Usuario {reminder.user.username} no tiene email registrado."))
+            subject = f"🔔 Recordatorio de pago: {reminder.name}"
+            message = (
+                f"Hola {reminder.user.username},\n\n"
+                f"Tu pago de '{reminder.name}' vence el {reminder.date}.\n"
+                "Realiza tu pago a tiempo para evitar inconvenientes.\n\n"
+                "Gracias por usar AlcancíApp 🐷."
+            )
+            
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,  # Corregido aquí
+                [user_email],
+                fail_silently=False
+            )
+            
+            self.stdout.write(self.style.SUCCESS(f"✅ Correo enviado a {user_email}"))
+
+        self.stdout.write(self.style.SUCCESS("🎉 Proceso completado"))

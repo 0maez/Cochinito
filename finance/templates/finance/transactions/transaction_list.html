@@ -41,6 +41,46 @@
         </table>
     </div>
 
+    <!-- PAGINACIÓN -->
+    {% if transactions.has_other_pages %}
+    <div class="mt-6 flex justify-center space-x-2">
+        {% if transactions.has_previous %}
+        <a href="?page=1" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md">« Primera</a>
+        <a href="?page={{ transactions.previous_page_number }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md">‹ Anterior</a>
+        {% endif %}
+
+        <span class="px-4 py-2 bg-[#4b7f8c] text-white rounded-md">
+            Página {{ transactions.number }} de {{ transactions.paginator.num_pages }}
+        </span>
+
+        {% if transactions.has_next %}
+        <a href="?page={{ transactions.next_page_number }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md">Siguiente ›</a>
+        <a href="?page={{ transactions.paginator.num_pages }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md">Última »</a>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+<!-- Paginación -->
+<div class="mt-6 flex justify-center items-center space-x-4">
+    {% if transactions.has_previous %}
+        <a href="?page={{ transactions.previous_page_number }}" class="px-4 py-2 text-gray-700 border rounded-lg hover:bg-gray-200">
+            ←
+        </a>
+    {% endif %}
+
+    <span class="px-4 py-2 bg-gray-200 text-gray-700 border rounded-lg">
+        {{ transactions.number }} / {{ transactions.paginator.num_pages }}
+    </span>
+
+    {% if transactions.has_next %}
+        <a href="?page={{ transactions.next_page_number }}" class="px-4 py-2 text-gray-700 border rounded-lg hover:bg-gray-200">
+            →
+        </a>
+    {% endif %}
+</div>
+
+
+
     <div class="mt-8 flex space-x-6 justify-center">
         <a href="{% url 'add_income' %}" class="bg-[#4b7f8c] text-white px-8 py-3 rounded-full hover:bg-[#3b6f73] text-lg transition duration-300">Agregar Ingreso</a>
         <a href="{% url 'add_expense' %}" class="bg-[#abebc6] text-[#4b7f8c] px-8 py-3 rounded-full hover:bg-[#90d8a6] text-lg transition duration-300">Agregar Gasto</a>

@@ -14,11 +14,11 @@
         </div>
         <div class="flex space-x-2">
             <!-- Botón para editar el presupuesto -->
-            <a href="{% url 'budget_list' %}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-300">
+            <a href="{% url 'budget_list' %}" class="bg-[#4b7f8c] text-white px-4 py-2 rounded-lg hover:bg-[#355f6c] transition duration-300">
                 Editar Presupuesto
             </a>
             <!-- Botón para crear un nuevo presupuesto -->
-            <a href="{% url 'create_budget' %}" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition duration-300">
+            <a href="{% url 'create_budget' %}" class="bg-[#abebc6] text-gray-800 px-4 py-2 rounded-lg hover:bg-green-600 transition duration-300">
                 Crear Nuevo Presupuesto
             </a>
         </div>
@@ -65,7 +65,7 @@
         {% endif %}
         <div class="mt-4 flex justify-between">
             <a href="{% url 'reminder_list' %}" class="bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-gray-700">Ver todos</a>
-            <a href="{% url 'create_reminder' %}" class="bg-[#abebc6] text-gray-800 px-6 py-3 rounded-lg hover:bg-teal-200">Crear Nuevo</a>
+            <a href="{% url 'create_reminder' %}" class="bg-[#abebc6] text-gray-800 px-6 py-3 rounded-lg hover:bg-green-600">Crear Nuevo</a>
         </div>
     </div>
 

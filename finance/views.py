@@ -16,6 +16,8 @@ from django.http import JsonResponse, HttpResponse
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from django.utils import timezone
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 
 
 
@@ -278,9 +280,26 @@ class TransactionListView(ListView):
     model = Transaction
     template_name = 'finance/transactions/transaction_list.html'
     context_object_name = 'transactions'
+    paginate_by = 10  # Muestra 10 transacciones por página
 
     def get_queryset(self):
         return Transaction.objects.filter(user=self.request.user).order_by('-created_at')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        transactions = self.get_queryset()
+        paginator = Paginator(transactions, self.paginate_by)
+        page = self.request.GET.get('page')
+
+        try:
+            transactions = paginator.page(page)
+        except PageNotAnInteger:
+            transactions = paginator.page(1)
+        except EmptyPage:
+            transactions = paginator.page(paginator.num_pages)
+
+        context['transactions'] = transactions
+        return context
 
 class TransactionUpdateView(UpdateView):
     model = Transaction
