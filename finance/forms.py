@@ -34,13 +34,13 @@ class RegisterForm(UserCreationForm):
 
 class IncomeForm(forms.Form):
     income_sources = forms.ModelMultipleChoiceField(
-        queryset=IncomeSource.objects.filter(user__isnull=True),  # Mostrar todas las categorías
+        queryset=IncomeSource.objects.filter(user__isnull=True),  
         widget=forms.CheckboxSelectMultiple,
         required=True
     )
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)  # No necesitas el argumento 'user'
+        super().__init__(*args, **kwargs)  
 
     
 class BasicExpenseForm(forms.Form):
@@ -122,6 +122,7 @@ class TransactionForm(forms.ModelForm):
         self.transaction_type = kwargs.pop('transaction_type', None)  
         user = kwargs.pop('user', None) 
         super().__init__(*args, **kwargs)
+
         if self.transaction_type == 'income':
             self.fields['income_source'].queryset = IncomeSource.objects.filter(user__isnull=True)
             self.fields['basic_expense'].widget = forms.HiddenInput()  
@@ -136,7 +137,22 @@ class TransactionForm(forms.ModelForm):
             self.fields['savings_investment'].queryset = SavingsInvestment.objects.filter(user__isnull=True)
             self.fields['income_source'].widget = forms.HiddenInput()
             self.fields['basic_expense'].widget = forms.HiddenInput()
-            self.fields['wish_expense'].widget = forms.HiddenInput()  
+            self.fields['wish_expense'].widget = forms.HiddenInput()
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if self.transaction_type == 'income' and not cleaned_data.get('income_source'):
+            self.add_error('income_source', 'Selecciona una fuente de ingreso')
+            
+        elif self.transaction_type == 'expense':
+            if not cleaned_data.get('basic_expense') and not cleaned_data.get('wish_expense'):
+                self.add_error('basic_expense', 'Selecciona un tipo de gasto')
+                
+        elif self.transaction_type == 'savings' and not cleaned_data.get('savings_investment'):
+            self.add_error('savings_investment', 'Selecciona un tipo de ahorro/inversión')
+            
+        return cleaned_data
+
 
 class SummaryFilterForm(forms.Form):
     DATE_RANGES = [

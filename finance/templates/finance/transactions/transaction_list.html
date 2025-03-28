@@ -15,7 +15,6 @@
                     <th class="px-6 py-3 text-left text-sm font-semibold">Tipo</th>
                     <th class="px-6 py-3 text-left text-sm font-semibold">Nombre</th>
                     <th class="px-6 py-3 text-left text-sm font-semibold">Monto</th>
-                    <th class="px-6 py-3 text-left text-sm font-semibold">Categoría</th>
                     <th class="px-6 py-3 text-left text-sm font-semibold">Acciones</th>
                 </tr>
             </thead>
@@ -26,7 +25,6 @@
                     <td class="px-6 py-4 text-sm text-gray-700">{{ transaction.get_transaction_type_display }}</td>
                     <td class="px-6 py-4 text-sm text-gray-700">{{ transaction.name }}</td>
                     <td class="px-6 py-4 text-sm text-gray-700">{{ transaction.amount|floatformat:2 }}</td>
-                    <td class="px-6 py-4 text-sm text-gray-700">{{ transaction.category }}</td>
                     <td class="px-6 py-4 text-sm">
                         <a href="{% url 'update_transaction' transaction.id %}" class="bg-[#abebc6] text-[#4b7f8c] px-4 py-2 rounded-full text-xs hover:bg-[#90d8a6] transition duration-300">Editar</a>
                         <a href="{% url 'delete_transaction' transaction.id %}" class="bg-red-500 text-white px-4 py-2 rounded-full text-xs hover:bg-red-600 transition duration-300 ml-2">Eliminar</a>
