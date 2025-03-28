@@ -74,7 +74,7 @@
         <h3 class="text-lg font-bold text-gray-800">Ingresos</h3>
         <ul>
             {% for source in income_sources %}
-                <li>{{ source.name }}: ${{ source.amount|floatformat:2 }}</li>
+                <li>{{ source.name }} {{ source.amount|floatformat:2 }}</li>
             {% endfor %}
         </ul>
     </div>

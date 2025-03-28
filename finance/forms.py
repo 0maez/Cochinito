@@ -117,6 +117,15 @@ class TransactionForm(forms.ModelForm):
     class Meta:
         model = Transaction
         fields = ['name', 'amount', 'description', 'income_source', 'basic_expense', 'wish_expense', 'savings_investment']
+        labels = {
+            'name': 'Nombre',
+            'amount': 'Monto',
+            'description': 'Descripción',
+            'savings_investment': 'Ahorro/Inversión',
+            'income_source': 'Fuente de ingreso',
+            'basic_expense': 'Gasto básico',
+            'wish_expense': 'Deseo',
+        }
 
     def __init__(self, *args, **kwargs):
         self.transaction_type = kwargs.pop('transaction_type', None)  
