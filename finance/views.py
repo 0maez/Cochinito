@@ -188,10 +188,6 @@ def create_reminder(request):
         form = ReminderForm()
     return render(request, 'finance/create_reminder.html', {'form': form})
 
-
-from django.shortcuts import render, redirect
-from .models import Reminder
-
 @login_required
 def mark_reminder_paid(request):
     if request.method == 'POST':
@@ -216,6 +212,7 @@ def reminder_list(request):
     return render(request, 'finance/reminder_list.html', context)
 
 
+# IncomeCreateView
 class IncomeCreateView(CreateView):
     model = Transaction
     form_class = TransactionForm
@@ -231,11 +228,12 @@ class IncomeCreateView(CreateView):
     def form_valid(self, form):
         form.instance.user = self.request.user  
         form.instance.transaction_type = 'income' 
-        budget = Budget.objects.filter(user=self.request.user).first()  
+        budget = Budget.objects.filter(user=self.request.user, is_active=True).first()  # Cambio aquí
         if budget:
             form.instance.budget = budget  
         return super().form_valid(form)
-    
+
+# ExpenseCreateView
 class ExpenseCreateView(CreateView):
     model = Transaction
     form_class = TransactionForm
@@ -251,11 +249,12 @@ class ExpenseCreateView(CreateView):
     def form_valid(self, form):
         form.instance.user = self.request.user  
         form.instance.transaction_type = 'expense'  
-        budget = Budget.objects.filter(user=self.request.user).first()  
+        budget = Budget.objects.filter(user=self.request.user, is_active=True).first()  # Cambio aquí
         if budget:
             form.instance.budget = budget  
         return super().form_valid(form)
-    
+
+# SavingsCreateView
 class SavingsCreateView(CreateView):
     model = Transaction
     form_class = TransactionForm
@@ -271,7 +270,7 @@ class SavingsCreateView(CreateView):
     def form_valid(self, form):
         form.instance.user = self.request.user  
         form.instance.transaction_type = 'savings'  
-        budget = Budget.objects.filter(user=self.request.user).first()  
+        budget = Budget.objects.filter(user=self.request.user, is_active=True).first()  # Cambio aquí
         if budget:
             form.instance.budget = budget  
         return super().form_valid(form)

@@ -126,41 +126,67 @@ class TransactionForm(forms.ModelForm):
             'basic_expense': 'Gasto básico',
             'wish_expense': 'Deseo',
         }
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+        }
 
     def __init__(self, *args, **kwargs):
-        self.transaction_type = kwargs.pop('transaction_type', None)  
-        user = kwargs.pop('user', None) 
+        self.user = kwargs.pop('user', None)
+        self.transaction_type = kwargs.pop('transaction_type', None)
         super().__init__(*args, **kwargs)
 
+        # Configurar campos según el tipo de transacción
         if self.transaction_type == 'income':
-            self.fields['income_source'].queryset = IncomeSource.objects.filter(user__isnull=True)
-            self.fields['basic_expense'].widget = forms.HiddenInput()  
-            self.fields['wish_expense'].widget = forms.HiddenInput() 
-            self.fields['savings_investment'].widget = forms.HiddenInput()  
+            self.fields['income_source'].queryset = IncomeSource.objects.filter(user=self.user)
+            self._hide_fields(['basic_expense', 'wish_expense', 'savings_investment'])
+            
         elif self.transaction_type == 'expense':
-            self.fields['basic_expense'].queryset = BasicExpense.objects.filter(user__isnull=True)
-            self.fields['wish_expense'].queryset = WishExpense.objects.filter(user__isnull=True)
-            self.fields['income_source'].widget = forms.HiddenInput()  
-            self.fields['savings_investment'].widget = forms.HiddenInput()
+            self.fields['basic_expense'].queryset = BasicExpense.objects.filter(user=self.user)
+            self.fields['wish_expense'].queryset = WishExpense.objects.filter(user=self.user)
+            self._hide_fields(['income_source', 'savings_investment'])
+            
         elif self.transaction_type == 'savings':
-            self.fields['savings_investment'].queryset = SavingsInvestment.objects.filter(user__isnull=True)
-            self.fields['income_source'].widget = forms.HiddenInput()
-            self.fields['basic_expense'].widget = forms.HiddenInput()
-            self.fields['wish_expense'].widget = forms.HiddenInput()
+            self.fields['savings_investment'].queryset = SavingsInvestment.objects.filter(user=self.user)
+            self._hide_fields(['income_source', 'basic_expense', 'wish_expense'])
+
+    def _hide_fields(self, fields_to_hide):
+        """Oculta campos y los hace no requeridos"""
+        for field in fields_to_hide:
+            self.fields[field].widget = forms.HiddenInput()
+            self.fields[field].required = False
 
     def clean(self):
         cleaned_data = super().clean()
-        if self.transaction_type == 'income' and not cleaned_data.get('income_source'):
-            self.add_error('income_source', 'Selecciona una fuente de ingreso')
-            
+        
+        # Validaciones específicas por tipo de transacción
+        if self.transaction_type == 'income':
+            if not cleaned_data.get('income_source'):
+                self.add_error('income_source', 'Debes seleccionar una fuente de ingreso')
+                
         elif self.transaction_type == 'expense':
             if not cleaned_data.get('basic_expense') and not cleaned_data.get('wish_expense'):
-                self.add_error('basic_expense', 'Selecciona un tipo de gasto')
+                msg = 'Debes seleccionar un tipo de gasto (básico o deseo)'
+                self.add_error('basic_expense', msg)
+                self.add_error('wish_expense', msg)
                 
-        elif self.transaction_type == 'savings' and not cleaned_data.get('savings_investment'):
-            self.add_error('savings_investment', 'Selecciona un tipo de ahorro/inversión')
-            
+        elif self.transaction_type == 'savings':
+            if not cleaned_data.get('savings_investment'):
+                self.add_error('savings_investment', 'Debes seleccionar un tipo de ahorro/inversión')
+        
         return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.user = self.user
+        instance.transaction_type = self.transaction_type
+        
+        # Asignar presupuesto activo automáticamente
+        if not instance.budget_id:
+            instance.budget = self.user.budget_set.filter(is_active=True).first()
+        
+        if commit:
+            instance.save()
+        return instance
 
 
 class SummaryFilterForm(forms.Form):
