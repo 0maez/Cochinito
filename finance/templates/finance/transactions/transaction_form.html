@@ -25,6 +25,7 @@
 
         <form method="post">
             {% csrf_token %}
+            {{ form.transaction_type }}  <!-- Campo oculto añadido -->
             
             <div class="mb-4">
                 <label for="{{ form.name.id_for_label }}" class="text-gray-700 font-semibold">{{ form.name.label }}</label>
@@ -50,15 +51,8 @@
                 {% endif %}
             </div>
 
-            <div class="mb-4">
-                <label for="{{ form.category.id_for_label }}" class="text-gray-700 font-semibold">{{ form.category.label }}</label>
-                {{ form.category }}
-                {% if form.category.errors %}
-                    <div class="text-red-500 mt-1 text-sm">{{ form.category.errors }}</div>
-                {% endif %}
-            </div>
-
-            {% if form.income_source %}
+            <!-- Sección dinámica según tipo de transacción -->
+            {% if form.transaction_type.value == 'income' %}
                 <div class="mb-4">
                     <label for="{{ form.income_source.id_for_label }}" class="text-gray-700 font-semibold">{{ form.income_source.label }}</label>
                     {{ form.income_source }}
@@ -66,9 +60,8 @@
                         <div class="text-red-500 mt-1 text-sm">{{ form.income_source.errors }}</div>
                     {% endif %}
                 </div>
-            {% endif %}
-
-            {% if form.basic_expense %}
+            
+            {% elif form.transaction_type.value == 'expense' %}
                 <div class="mb-4">
                     <label for="{{ form.basic_expense.id_for_label }}" class="text-gray-700 font-semibold">{{ form.basic_expense.label }}</label>
                     {{ form.basic_expense }}
@@ -76,14 +69,21 @@
                         <div class="text-red-500 mt-1 text-sm">{{ form.basic_expense.errors }}</div>
                     {% endif %}
                 </div>
-            {% endif %}
-
-            {% if form.wish_expense %}
+                
                 <div class="mb-4">
                     <label for="{{ form.wish_expense.id_for_label }}" class="text-gray-700 font-semibold">{{ form.wish_expense.label }}</label>
                     {{ form.wish_expense }}
                     {% if form.wish_expense.errors %}
                         <div class="text-red-500 mt-1 text-sm">{{ form.wish_expense.errors }}</div>
+                    {% endif %}
+                </div>
+            
+            {% elif form.transaction_type.value == 'savings' %}
+                <div class="mb-4">
+                    <label for="{{ form.savings_investment.id_for_label }}" class="text-gray-700 font-semibold">{{ form.savings_investment.label }}</label>
+                    {{ form.savings_investment }}
+                    {% if form.savings_investment.errors %}
+                        <div class="text-red-500 mt-1 text-sm">{{ form.savings_investment.errors }}</div>
                     {% endif %}
                 </div>
             {% endif %}

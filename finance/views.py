@@ -310,12 +310,12 @@ class TransactionUpdateView(UpdateView):
     model = Transaction
     form_class = TransactionForm
     template_name = 'finance/transactions/transaction_form.html'
-    context_object_name = 'transactions'
     success_url = reverse_lazy('transaction_list')
     
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs['user'] = self.request.user  
+        kwargs['user'] = self.request.user
+        kwargs['transaction_type'] = self.object.transaction_type  # ¡Nueva línea importante!
         return kwargs
 
     def get_queryset(self):

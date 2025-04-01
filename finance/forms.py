@@ -116,7 +116,8 @@ class ReminderForm(forms.ModelForm):
 class TransactionForm(forms.ModelForm):
     class Meta:
         model = Transaction
-        fields = ['name', 'amount', 'description', 'income_source', 'basic_expense', 'wish_expense', 'savings_investment']
+        fields = ['transaction_type', 'name', 'amount', 'description', 
+                 'income_source', 'basic_expense', 'wish_expense', 'savings_investment']
         labels = {
             'name': 'Nombre',
             'amount': 'Monto',
@@ -125,28 +126,34 @@ class TransactionForm(forms.ModelForm):
             'income_source': 'Fuente de ingreso',
             'basic_expense': 'Gasto básico',
             'wish_expense': 'Deseo',
+            'transaction_type': 'Tipo de transacción'
         }
         widgets = {
             'description': forms.Textarea(attrs={'rows': 3}),
+            'transaction_type': forms.HiddenInput()  # Campo oculto
         }
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
-        self.transaction_type = kwargs.pop('transaction_type', None)
+        transaction_type = kwargs.pop('transaction_type', None)
         super().__init__(*args, **kwargs)
-
+        
+        # Obtener transaction_type de la instancia si es edición
+        if self.instance and self.instance.pk:
+            transaction_type = self.instance.transaction_type
+        
         # Configurar campos según el tipo de transacción
-        if self.transaction_type == 'income':
-            self.fields['income_source'].queryset = IncomeSource.objects.filter(user__isnull=True)
+        if transaction_type == 'income':
+            self.fields['income_source'].queryset = IncomeSource.objects.filter(user=self.user)
             self._hide_fields(['basic_expense', 'wish_expense', 'savings_investment'])
             
-        elif self.transaction_type == 'expense':
-            self.fields['basic_expense'].queryset = BasicExpense.objects.filter(user__isnull=True)
-            self.fields['wish_expense'].queryset = WishExpense.objects.filter(user__isnull=True)
+        elif transaction_type == 'expense':
+            self.fields['basic_expense'].queryset = BasicExpense.objects.filter(user=self.user)
+            self.fields['wish_expense'].queryset = WishExpense.objects.filter(user=self.user)
             self._hide_fields(['income_source', 'savings_investment'])
             
-        elif self.transaction_type == 'savings':
-            self.fields['savings_investment'].queryset = SavingsInvestment.objects.filter(user__isnull=True)
+        elif transaction_type == 'savings':
+            self.fields['savings_investment'].queryset = SavingsInvestment.objects.filter(user=self.user)
             self._hide_fields(['income_source', 'basic_expense', 'wish_expense'])
 
     def _hide_fields(self, fields_to_hide):
@@ -157,19 +164,24 @@ class TransactionForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
+        transaction_type = cleaned_data.get('transaction_type')
+        
+        # Validación de presupuesto activo
+        if not Budget.objects.filter(user=self.user, is_active=True).exists():
+            raise ValidationError("No hay un presupuesto activo. Crea o activa uno primero.")
         
         # Validaciones específicas por tipo de transacción
-        if self.transaction_type == 'income':
+        if transaction_type == 'income':
             if not cleaned_data.get('income_source'):
                 self.add_error('income_source', 'Debes seleccionar una fuente de ingreso')
                 
-        elif self.transaction_type == 'expense':
+        elif transaction_type == 'expense':
             if not cleaned_data.get('basic_expense') and not cleaned_data.get('wish_expense'):
                 msg = 'Debes seleccionar un tipo de gasto (básico o deseo)'
                 self.add_error('basic_expense', msg)
                 self.add_error('wish_expense', msg)
                 
-        elif self.transaction_type == 'savings':
+        elif transaction_type == 'savings':
             if not cleaned_data.get('savings_investment'):
                 self.add_error('savings_investment', 'Debes seleccionar un tipo de ahorro/inversión')
         
@@ -178,21 +190,14 @@ class TransactionForm(forms.ModelForm):
     def save(self, commit=True):
         instance = super().save(commit=False)
         instance.user = self.user
-        instance.transaction_type = self.transaction_type
         
-        # Asignar presupuesto activo automáticamente
+        # Asignar presupuesto activo automáticamente si no tiene
         if not instance.budget_id:
-            instance.budget = self.user.budget_set.filter(is_active=True).first()
+            instance.budget = Budget.objects.filter(user=self.user, is_active=True).first()
         
         if commit:
             instance.save()
         return instance
-    
-    def clean(self):
-        cleaned_data = super().clean()
-        if not Budget.objects.filter(user=self.user, is_active=True).exists():
-            raise ValidationError("No hay un presupuesto activo. Crea o activa uno primero.")
-        return cleaned_data
 
 
 class SummaryFilterForm(forms.Form):
