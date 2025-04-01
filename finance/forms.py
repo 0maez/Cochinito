@@ -83,7 +83,7 @@ class BudgetForm(forms.ModelForm):
         model = Budget
         fields = ['total_amount']
         labels = {
-            'total_amount': 'Presupuesto inicial',  
+            'total_amount': 'Presupuesto',  
         }
 
     def __init__(self, *args, **kwargs):
@@ -91,7 +91,7 @@ class BudgetForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['total_amount'].widget.attrs.update({
             'class': 'form-control border-2 border-[#4b7f8c] rounded-lg p-2 w-full',
-            'placeholder': 'Ingresa tu presupuesto inicial'
+            'placeholder': 'Ingresa tu presupuesto'
         })
 
     def save(self, commit=True):
