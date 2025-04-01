@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import Profile, IncomeSource, BasicExpense, WishExpense, SavingsInvestment, Reminder, Budget
-
+from django.core.exceptions import ValidationError
 from finance.models import Profile, IncomeSource, BasicExpense, WishExpense, SavingsInvestment, Transaction, Budget
 
 
@@ -137,16 +137,16 @@ class TransactionForm(forms.ModelForm):
 
         # Configurar campos según el tipo de transacción
         if self.transaction_type == 'income':
-            self.fields['income_source'].queryset = IncomeSource.objects.filter(user=self.user)
+            self.fields['income_source'].queryset = IncomeSource.objects.filter(user__isnull=True)
             self._hide_fields(['basic_expense', 'wish_expense', 'savings_investment'])
             
         elif self.transaction_type == 'expense':
-            self.fields['basic_expense'].queryset = BasicExpense.objects.filter(user=self.user)
-            self.fields['wish_expense'].queryset = WishExpense.objects.filter(user=self.user)
+            self.fields['basic_expense'].queryset = BasicExpense.objects.filter(user__isnull=True)
+            self.fields['wish_expense'].queryset = WishExpense.objects.filter(user__isnull=True)
             self._hide_fields(['income_source', 'savings_investment'])
             
         elif self.transaction_type == 'savings':
-            self.fields['savings_investment'].queryset = SavingsInvestment.objects.filter(user=self.user)
+            self.fields['savings_investment'].queryset = SavingsInvestment.objects.filter(user__isnull=True)
             self._hide_fields(['income_source', 'basic_expense', 'wish_expense'])
 
     def _hide_fields(self, fields_to_hide):
@@ -187,6 +187,12 @@ class TransactionForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        if not Budget.objects.filter(user=self.user, is_active=True).exists():
+            raise ValidationError("No hay un presupuesto activo. Crea o activa uno primero.")
+        return cleaned_data
 
 
 class SummaryFilterForm(forms.Form):

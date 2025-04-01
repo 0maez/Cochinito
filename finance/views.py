@@ -228,9 +228,11 @@ class IncomeCreateView(CreateView):
     def form_valid(self, form):
         form.instance.user = self.request.user  
         form.instance.transaction_type = 'income' 
-        budget = Budget.objects.filter(user=self.request.user, is_active=True).first()  # Cambio aquí
-        if budget:
-            form.instance.budget = budget  
+        active_budget = Budget.objects.filter(user=self.request.user, is_active=True).first()  # Cambio aquí
+        if not active_budget:
+            messages.error(self.request, "No hay un presupuesto activo. Crea uno primero.")
+            return redirect('create_budget')
+        form.instance.budget = active_budget  # Asignación explícita
         return super().form_valid(form)
 
 # ExpenseCreateView
@@ -249,9 +251,11 @@ class ExpenseCreateView(CreateView):
     def form_valid(self, form):
         form.instance.user = self.request.user  
         form.instance.transaction_type = 'expense'  
-        budget = Budget.objects.filter(user=self.request.user, is_active=True).first()  # Cambio aquí
-        if budget:
-            form.instance.budget = budget  
+        active_budget = Budget.objects.filter(user=self.request.user, is_active=True).first()  # Cambio aquí
+        if not active_budget:
+            messages.error(self.request, "No hay un presupuesto activo. Crea uno primero.")
+            return redirect('create_budget')
+        form.instance.budget = active_budget  # Asignación explícita
         return super().form_valid(form)
 
 # SavingsCreateView
@@ -270,9 +274,11 @@ class SavingsCreateView(CreateView):
     def form_valid(self, form):
         form.instance.user = self.request.user  
         form.instance.transaction_type = 'savings'  
-        budget = Budget.objects.filter(user=self.request.user, is_active=True).first()  # Cambio aquí
-        if budget:
-            form.instance.budget = budget  
+        active_budget = Budget.objects.filter(user=self.request.user, is_active=True).first()  # Cambio aquí
+        if not active_budget:
+            messages.error(self.request, "No hay un presupuesto activo. Crea uno primero.")
+            return redirect('create_budget')
+        form.instance.budget = active_budget  # Asignación explícita
         return super().form_valid(form)
 
 class TransactionListView(ListView):

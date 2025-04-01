@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.db.models import Sum
+from django.core.exceptions import ValidationError
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE,)
@@ -53,6 +54,8 @@ class Budget(models.Model):
     is_active = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
+        if self.is_active:  # Solo si este presupuesto se marca como activo
+            Budget.objects.filter(user=self.user).exclude(pk=self.pk).update(is_active=False)
         total = Decimal(self.total_amount)
         
         if not self.pk:
@@ -144,6 +147,11 @@ class Transaction(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
 
     def save(self, *args, **kwargs):
+        if not self.budget_id:  # Si no tiene presupuesto asignado
+            active_budget = Budget.objects.filter(user=self.user, is_active=True).first()
+            if not active_budget:
+                raise ValidationError("No hay un presupuesto activo para asociar esta transacción.")
+            self.budget = active_budget
         super().save(*args, **kwargs)
 
     def __str__(self):
