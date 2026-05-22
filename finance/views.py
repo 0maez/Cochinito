@@ -36,6 +36,7 @@ def register(request):
         form = RegisterForm()
     return render(request, 'finance/register.html', {'form': form})
 
+@login_required
 def income_form(request):
     if request.method == "POST":
         form = IncomeForm(request.POST)
@@ -49,31 +50,34 @@ def income_form(request):
     return render(request, "finance/income_form.html", {"form": form})
 
 
+@login_required
 def basic_expense_form(request):
     if request.method == "POST":
-        form = BasicExpenseForm(request.POST) 
+        form = BasicExpenseForm(request.POST)
         if form.is_valid():
             selected_basic_expenses = form.cleaned_data["basic_expenses"]
             for expense in selected_basic_expenses:
                 BasicExpense.objects.get_or_create(user=request.user, name=expense.name)
             return redirect("wish_expense_form")
     else:
-        form = BasicExpenseForm()  
+        form = BasicExpenseForm()
     return render(request, "finance/basic_expense_form.html", {"form": form})
 
+@login_required
 def wish_expense_form(request):
     if request.method == "POST":
-        form = WishExpenseForm(request.POST) 
+        form = WishExpenseForm(request.POST)
         if form.is_valid():
             selected_wish_expenses = form.cleaned_data["wish_expenses"]
             for wish in selected_wish_expenses:
                 WishExpense.objects.get_or_create(user=request.user, name=wish.name)
             return redirect("savings_investment_form")
     else:
-        form = WishExpenseForm()  
+        form = WishExpenseForm()
     return render(request, "finance/wish_expense_form.html", {"form": form})
 
 
+@login_required
 def savings_investment_form(request):
     if request.method == "POST":
         form = SavingsInvestmentForm(request.POST)
@@ -83,7 +87,7 @@ def savings_investment_form(request):
                 SavingsInvestment.objects.get_or_create(user=request.user, name=investment.name)
             return redirect("dashboard")
     else:
-        form = SavingsInvestmentForm() 
+        form = SavingsInvestmentForm()
     return render(request, "finance/savings_investment_form.html", {"form": form})
 
 @login_required
@@ -105,28 +109,32 @@ def dashboard(request):
     spent_on_wish = Decimal(0)
     spent_on_savings = Decimal(0)
     total_amount = Decimal(0)
+    percentage_basic = 0
+    percentage_wish = 0
+    percentage_savings = 0
+    is_balance_low = False
+    exceeded_basic = False
+    exceeded_wish = False
+    exceeded_savings = False
 
-    total_amount = user_budget.total_amount
-    available_for_basic_expenses = user_budget.basic_expenses - sum(expense.amount for expense in basic_expenses)
-    available_for_wish_expenses = user_budget.wish_expenses - sum(expense.amount for expense in wish_expenses)
-    available_for_savings_investments = user_budget.available_savings - sum(expense.amount for expense in savings_investments)
+    if user_budget:
+        total_amount = user_budget.total_amount
+        spent_on_basic = sum(expense.amount for expense in basic_expenses)
+        spent_on_wish = sum(expense.amount for expense in wish_expenses)
+        spent_on_savings = sum(expense.amount for expense in savings_investments)
 
-    spent_on_basic = sum(expense.amount for expense in basic_expenses)
-    spent_on_wish = sum(expense.amount for expense in wish_expenses)
-    spent_on_savings = sum(expense.amount for expense in savings_investments)
+        available_for_basic_expenses = user_budget.basic_expenses - spent_on_basic
+        available_for_wish_expenses = user_budget.wish_expenses - spent_on_wish
+        available_for_savings_investments = user_budget.savings_investments - spent_on_savings
 
-    available_for_basic_expenses = user_budget.basic_expenses - spent_on_basic
-    available_for_wish_expenses = user_budget.wish_expenses - spent_on_wish
-    available_for_savings_investments = user_budget.savings_investments - spent_on_savings
+        percentage_basic = (spent_on_basic / user_budget.basic_expenses) * 100 if user_budget.basic_expenses > 0 else 0
+        percentage_wish = (spent_on_wish / user_budget.wish_expenses) * 100 if user_budget.wish_expenses > 0 else 0
+        percentage_savings = (spent_on_savings / user_budget.savings_investments) * 100 if user_budget.savings_investments > 0 else 0
 
-    percentage_basic = (spent_on_basic / user_budget.basic_expenses) * 100 if user_budget and user_budget.basic_expenses > 0 else 0
-    percentage_wish = (spent_on_wish / user_budget.wish_expenses) * 100 if user_budget and user_budget.wish_expenses > 0 else 0
-    percentage_savings = (spent_on_savings / user_budget.savings_investments) * 100 if user_budget and user_budget.savings_investments > 0 else 0
-
-    is_balance_low = user_budget.current_balance <= (user_budget.total_amount * Decimal('0.20')) if user_budget else False
-    exceeded_basic = available_for_basic_expenses < 0
-    exceeded_wish = available_for_wish_expenses < 0
-    exceeded_savings = available_for_savings_investments < 0
+        is_balance_low = user_budget.current_balance <= (user_budget.total_amount * Decimal('0.20'))
+        exceeded_basic = available_for_basic_expenses < 0
+        exceeded_wish = available_for_wish_expenses < 0
+        exceeded_savings = available_for_savings_investments < 0
     
 
     context = {

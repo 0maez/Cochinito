@@ -2,7 +2,7 @@ from django.db import models
 from decimal import Decimal
 from django.contrib.auth.models import User
 from django.utils import timezone
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_save, post_delete, pre_save
 from django.dispatch import receiver
 from django.db.models import Sum
 from django.core.exceptions import ValidationError
@@ -157,17 +157,48 @@ class Transaction(models.Model):
     def __str__(self):
         return f"{self.get_transaction_type_display()}: {self.description} ({self.amount})"
 
+@receiver(pre_save, sender=Transaction)
+def capture_transaction_before_save(sender, instance, **kwargs):
+    if instance.pk:
+        try:
+            old = Transaction.objects.get(pk=instance.pk)
+            instance._old_amount = old.amount
+            instance._old_type = old.transaction_type
+        except Transaction.DoesNotExist:
+            instance._old_amount = None
+            instance._old_type = None
+    else:
+        instance._old_amount = None
+        instance._old_type = None
+
 @receiver(post_save, sender=Transaction)
 def update_budget_on_transaction(sender, instance, created, **kwargs):
+    budget = instance.budget
+
     if created:
-        budget = instance.budget
         if instance.transaction_type == 'income':
             budget.current_balance += instance.amount
         elif instance.transaction_type == 'expense':
             budget.current_balance -= instance.amount
         elif instance.transaction_type == 'savings':
             budget.current_balance -= instance.amount
-        budget.save()
+    else:
+        if hasattr(instance, '_old_amount') and instance._old_amount is not None:
+            if instance._old_type == 'income':
+                budget.current_balance -= instance._old_amount
+            elif instance._old_type == 'expense':
+                budget.current_balance += instance._old_amount
+            elif instance._old_type == 'savings':
+                budget.current_balance += instance._old_amount
+
+            if instance.transaction_type == 'income':
+                budget.current_balance += instance.amount
+            elif instance.transaction_type == 'expense':
+                budget.current_balance -= instance.amount
+            elif instance.transaction_type == 'savings':
+                budget.current_balance -= instance.amount
+
+    budget.save()
 
 @receiver(post_delete, sender=Transaction)
 def update_budget_on_transaction_delete(sender, instance, **kwargs):
